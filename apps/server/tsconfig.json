@@ -1,0 +1,3 @@
+{
+    "extends": "@gnosis/typescript-config/base.json"
+}
