@@ -1,3 +1,8 @@
+'use client';
 export default function Home() {
-    return <div className="bg-red-500">HEMLO</div>;
+    return (
+        <div>
+            <h1>GNOSIS</h1>
+        </div>
+    );
 }

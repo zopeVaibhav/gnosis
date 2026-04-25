@@ -11,9 +11,12 @@
     },
     "dependencies": {
         "@gnosis/database": "workspace:*",
+        "axios": "^1.15.2",
         "next": "16.2.4",
+        "next-auth": "4",
         "react": "19.2.4",
-        "react-dom": "19.2.4"
+        "react-dom": "19.2.4",
+        "zustand": "^5.0.12"
     },
     "devDependencies": {
         "@gnosis/eslint-config": "workspace:*",
