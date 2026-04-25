@@ -9,7 +9,7 @@
         "generate": "prisma generate",
         "migrate": "prisma migrate dev",
         "studio": "prisma studio",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "check-types": "tsc --noEmit"
     },
     "dependencies": {
         "@prisma/adapter-pg": "^7.8.0",
