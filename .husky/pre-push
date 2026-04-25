@@ -1,0 +1,33 @@
+GREEN="\033[0;32m"
+RED="\033[0;31m"
+MAGENTA="\033[1;35m"
+CYAN="\033[0;36m"
+RESET="\033[0m"
+
+echo "${MAGENTA}Running pre-push checks...${RESET}"
+
+echo "${CYAN}Running formatter...${RESET}"
+pnpm format || {
+  echo "${RED}✖ Formatting failed${RESET}"
+  exit 1
+}
+
+echo "${CYAN}Running linter...${RESET}"
+pnpm lint || {
+  echo "${RED}✖ Linting failed${RESET}"
+  exit 1
+}
+
+echo "${CYAN}Running type checks...${RESET}"
+pnpm check-types || {
+  echo "${RED}✖ Type checking failed${RESET}"
+  exit 1
+}
+
+echo "${CYAN}Running build...${RESET}"
+pnpm build || {
+  echo "${RED}✖ Build failed${RESET}"
+  exit 1
+}
+
+echo "${GREEN}✔ All pre-push checks passed!${RESET}"

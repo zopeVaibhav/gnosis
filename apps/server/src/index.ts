@@ -1,9 +1,8 @@
 import express from 'express';
-
-const PORT = process.env.DB_PORT || 8080;
+import { env } from './configs/env.js';
 
 const app = express();
 
-app.listen(PORT, async () => {
-    console.log(`Server running on port ${PORT}`);
+app.listen(env.SERVER_PORT, () => {
+    console.log(`Server running on port ${env.SERVER_PORT}`);
 });
