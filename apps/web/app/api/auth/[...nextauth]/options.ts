@@ -1,8 +1,9 @@
 import { SIGN_URL } from '@/routes/api-routes';
 import axios from 'axios';
-import { Account, NextAuthOptions, User } from 'next-auth';
+import { Account, NextAuthOptions, Profile, User } from 'next-auth';
 import Github from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
+import { cookies } from 'next/headers';
 
 export type AppUser = {
     id?: string | null;
@@ -12,30 +13,80 @@ export type AppUser = {
     token?: string | null;
 };
 
+const isProd = process.env.NODE_ENV === 'production';
+
 export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET,
     pages: {
         signIn: '/',
     },
     callbacks: {
-        async signIn({ user, account }: { user: AppUser; account: Account | null }) {
+        async signIn({
+            user,
+            account,
+            profile,
+        }: {
+            user: AppUser;
+            account: Account | null;
+            profile?: Profile;
+        }) {
             try {
-                if (account?.provider === 'google' || account?.provider === 'github') {
-                    const response = await axios.post(`${SIGN_URL}`, {
-                        user,
-                        account,
-                    });
+                if (!account) return false;
+                if (account.provider !== 'google' && account.provider !== 'github') return false;
 
-                    const result = response.data;
-
-                    if (result.success) {
-                        user.id = result.data.user.id.toString();
-                        user.token = result.data.user.token;
-                        return true;
+                if (account.provider === 'google') {
+                    if (!(profile as { email_verified?: boolean })?.email_verified) {
+                        return false;
                     }
-                    return false;
                 }
-                return false;
+
+                if (!user.email) return false;
+
+                const response = await axios.post(
+                    SIGN_URL,
+                    {
+                        ...account,
+                        ...user,
+                        accessToken: account.access_token ?? null,
+                        refreshToken: account.refresh_token ?? null,
+                        expiresAt: account.expires_at ?? null,
+                    },
+                    {
+                        withCredentials: true,
+                    },
+                );
+
+                const result = response.data;
+                if (!result?.success) return false;
+
+                const {
+                    user: backendUser,
+                    accessToken,
+                    refreshToken,
+                    accessTokenExpiresInSec,
+                    refreshTokenExpiresAt,
+                } = result.data;
+
+                const cookieStore = await cookies();
+
+                cookieStore.set('accessToken', accessToken, {
+                    httpOnly: true,
+                    secure: isProd,
+                    sameSite: 'lax',
+                    path: '/',
+                    maxAge: accessTokenExpiresInSec,
+                });
+
+                cookieStore.set('refreshToken', refreshToken, {
+                    httpOnly: true,
+                    secure: isProd,
+                    sameSite: 'lax',
+                    path: '/',
+                    expires: new Date(refreshTokenExpiresAt),
+                });
+
+                user.id = String(backendUser.id);
+                return true;
             } catch (error) {
                 console.log(error);
                 return false;

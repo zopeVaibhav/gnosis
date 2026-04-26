@@ -1,3 +1,7 @@
 {
-    "extends": "@gnosis/typescript-config/base.json"
+    "extends": "@gnosis/typescript-config/base.json",
+    "compilerOptions": {
+        "allowImportingTsExtensions": true,
+        "noEmit": true
+    }
 }
