@@ -1,8 +1,6 @@
 import { AppUser } from '@/app/api/auth/[...nextauth]/options';
 
 declare module 'next-auth' {
-    interface User extends AppUser {}
-
     interface Session {
         user: AppUser;
     }

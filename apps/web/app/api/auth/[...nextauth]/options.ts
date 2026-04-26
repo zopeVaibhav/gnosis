@@ -1,6 +1,6 @@
 import { SIGN_URL } from '@/routes/api-routes';
 import axios from 'axios';
-import { NextAuthOptions } from 'next-auth';
+import { Account, NextAuthOptions, User } from 'next-auth';
 import Github from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
 
@@ -18,7 +18,7 @@ export const authOptions: NextAuthOptions = {
         signIn: '/',
     },
     callbacks: {
-        async signIn({ user, account }) {
+        async signIn({ user, account }: { user: AppUser; account: Account | null }) {
             try {
                 if (account?.provider === 'google' || account?.provider === 'github') {
                     const response = await axios.post(`${SIGN_URL}`, {
