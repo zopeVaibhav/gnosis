@@ -1,8 +1,12 @@
 'use client';
+import Demo from '@/src/components/demo';
+
 export default function Home() {
     return (
-        <div>
+        <div className="flex flex-col items-center justify-center h-full gap-4">
             <h1>GNOSIS</h1>
+            <Demo />
+            <button onClick={() => console.log('HELLO')}>helo</button>
         </div>
     );
 }

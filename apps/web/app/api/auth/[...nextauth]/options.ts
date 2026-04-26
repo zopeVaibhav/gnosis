@@ -1,6 +1,7 @@
 import { SIGN_URL } from '@/routes/api-routes';
 import axios from 'axios';
 import { NextAuthOptions } from 'next-auth';
+import Github from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
 
 export type AppUser = {
@@ -14,12 +15,12 @@ export type AppUser = {
 export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET,
     pages: {
-        signIn: '/signin',
+        signIn: '/',
     },
     callbacks: {
         async signIn({ user, account }) {
             try {
-                if (account?.provider === 'google') {
+                if (account?.provider === 'google' || account?.provider === 'github') {
                     const response = await axios.post(`${SIGN_URL}`, {
                         user,
                         account,
@@ -64,6 +65,10 @@ export const authOptions: NextAuthOptions = {
                     response_type: 'code',
                 },
             },
+        }),
+        Github({
+            clientId: process.env.GITHUB_CLIENT_ID!,
+            clientSecret: process.env.GITHUB_CLIENT_SECRET!,
         }),
     ],
 };
