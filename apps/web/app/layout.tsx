@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-import SessionSetter from '@/src/components/utility/SessionSetter';
-import AxiosBootstrap from '@/src/components/utility/AxiosBootstrap';
+import SessionSetter from '@/src/utility/SessionSetter';
+import AxiosBootstrap from '@/src/utility/AxiosBootstrap';
 import { getServerSession } from 'next-auth';
 import { authOptions } from './api/auth/[...nextauth]/options';
 
