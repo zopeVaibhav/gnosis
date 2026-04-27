@@ -2,12 +2,21 @@ import { Request, Response } from 'express';
 import { prisma } from '@gnosis/database';
 import { env } from '../../configs/env';
 import { generateSha256 } from '../../utility/generateSha256';
+import { ResponseWriter } from '../../utility/responseWriter';
+import { ACCESS_COOKIE, REFRESH_COOKIE } from '@gnosis/types';
 
 const isProd = env.NODE_ENV === 'production';
 
+const clearOptions = {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: 'lax' as const,
+    path: '/',
+};
+
 export const logoutController = async (req: Request, res: Response) => {
     try {
-        const raw = req.cookies?.refreshToken;
+        const raw = req.cookies?.[REFRESH_COOKIE];
 
         if (raw) {
             const tokenHash = generateSha256(raw);
@@ -17,19 +26,12 @@ export const logoutController = async (req: Request, res: Response) => {
             });
         }
 
-        const clearOptions = {
-            httpOnly: true,
-            secure: isProd,
-            sameSite: 'lax' as const,
-            path: '/',
-        };
+        res.clearCookie(ACCESS_COOKIE, clearOptions);
+        res.clearCookie(REFRESH_COOKIE, clearOptions);
 
-        res.clearCookie('accessToken', clearOptions);
-        res.clearCookie('refreshToken', clearOptions);
-
-        return res.json({ success: true });
+        return ResponseWriter.success(res, null, 'Logged out');
     } catch (err) {
         console.error('logoutController error', err);
-        return res.status(500).json({ success: false, error: 'internal_error' });
+        return ResponseWriter.system_error(res);
     }
 };

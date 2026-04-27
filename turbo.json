@@ -1,6 +1,22 @@
 {
     "$schema": "https://turborepo.dev/schema.json",
     "ui": "tui",
+    "globalEnv": [
+        "NODE_ENV",
+        "DATABASE_URL",
+        "SERVER_PORT",
+        "WEB_ORIGIN",
+        "JWT_ACCESS_SECRET",
+        "ACCESS_TOKEN_TTL_SEC",
+        "REFRESH_TOKEN_TTL_SEC",
+        "NEXT_PUBLIC_API_URL",
+        "NEXTAUTH_URL",
+        "NEXTAUTH_SECRET",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "GITHUB_CLIENT_ID",
+        "GITHUB_CLIENT_SECRET"
+    ],
     "tasks": {
         "generate": {
             "cache": false

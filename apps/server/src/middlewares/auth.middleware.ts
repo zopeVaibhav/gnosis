@@ -4,6 +4,8 @@ import crypto from 'crypto';
 import { prisma } from '@gnosis/database';
 import { env } from '../configs/env';
 import { generateSha256 } from '../utility/generateSha256';
+import { ResponseWriter } from '../utility/responseWriter';
+import { ACCESS_COOKIE, ERROR_CODES, REFRESH_COOKIE } from '@gnosis/types';
 
 interface AccessTokenPayload {
     userId: number;
@@ -21,7 +23,7 @@ const cookieBase = {
 };
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-    const accessToken = req.cookies?.accessToken;
+    const accessToken = req.cookies?.[ACCESS_COOKIE];
 
     if (accessToken) {
         try {
@@ -33,9 +35,9 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         }
     }
 
-    const raw = req.cookies?.refreshToken;
+    const raw = req.cookies?.[REFRESH_COOKIE];
     if (!raw) {
-        return res.status(401).json({ success: false, error: 'unauthenticated' });
+        return ResponseWriter.unauthenticated(res);
     }
 
     const stored = await prisma.refreshToken.findUnique({
@@ -43,7 +45,11 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     });
 
     if (!stored) {
-        return res.status(401).json({ success: false, error: 'invalid_refresh_token' });
+        return ResponseWriter.unauthenticated(
+            res,
+            'Invalid refresh token',
+            ERROR_CODES.INVALID_REFRESH_TOKEN,
+        );
     }
 
     if (stored.revokedAt) {
@@ -51,13 +57,21 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
             where: { userId: stored.userId, revokedAt: null },
             data: { revokedAt: new Date() },
         });
-        res.clearCookie('accessToken', cookieBase);
-        res.clearCookie('refreshToken', cookieBase);
-        return res.status(401).json({ success: false, error: 'token_reuse_detected' });
+        res.clearCookie(ACCESS_COOKIE, cookieBase);
+        res.clearCookie(REFRESH_COOKIE, cookieBase);
+        return ResponseWriter.unauthenticated(
+            res,
+            'Token reuse detected',
+            ERROR_CODES.TOKEN_REUSE_DETECTED,
+        );
     }
 
     if (stored.expiresAt < new Date()) {
-        return res.status(401).json({ success: false, error: 'refresh_token_expired' });
+        return ResponseWriter.unauthenticated(
+            res,
+            'Refresh token expired',
+            ERROR_CODES.REFRESH_TOKEN_EXPIRED,
+        );
     }
 
     const newRaw = crypto.randomBytes(64).toString('hex');
@@ -82,11 +96,11 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         expiresIn: env.ACCESS_TOKEN_TTL_SEC,
     });
 
-    res.cookie('accessToken', newAccessToken, {
+    res.cookie(ACCESS_COOKIE, newAccessToken, {
         ...cookieBase,
         maxAge: env.ACCESS_TOKEN_TTL_SEC * 1000,
     });
-    res.cookie('refreshToken', newRaw, {
+    res.cookie(REFRESH_COOKIE, newRaw, {
         ...cookieBase,
         expires: newExpiresAt,
     });

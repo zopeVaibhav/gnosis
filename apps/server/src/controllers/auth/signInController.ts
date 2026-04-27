@@ -5,12 +5,13 @@ import jwt from 'jsonwebtoken';
 import { env } from '../../configs/env';
 import crypto from 'crypto';
 import { generateSha256 } from '../../utility/generateSha256';
+import { ResponseWriter } from '../../utility/responseWriter';
 
 export const signInController = async (req: Request, res: Response) => {
     try {
         const parsed = signInSchema.safeParse(req.body);
         if (!parsed.success) {
-            return res.status(400).json({ success: false, error: parsed.error });
+            return ResponseWriter.invalid_data(res, 'Invalid sign-in payload');
         }
         const data = parsed.data;
 
@@ -60,16 +61,12 @@ export const signInController = async (req: Request, res: Response) => {
         const expiresAt = new Date(Date.now() + env.REFRESH_TOKEN_TTL_SEC * 1000);
 
         await prisma.refreshToken.create({
-            data: {
-                userId: user.id,
-                tokenHash,
-                expiresAt,
-            },
+            data: { userId: user.id, tokenHash, expiresAt },
         });
 
-        return res.json({
-            success: true,
-            data: {
+        return ResponseWriter.success(
+            res,
+            {
                 user: {
                     id: user.id,
                     email: user.email,
@@ -81,12 +78,10 @@ export const signInController = async (req: Request, res: Response) => {
                 accessTokenExpiresInSec: env.ACCESS_TOKEN_TTL_SEC,
                 refreshTokenExpiresAt: expiresAt.toISOString(),
             },
-        });
-    } catch (error) {
-        console.log('singinControllerError', error);
-        return res.status(500).json({
-            success: false,
-            error: 'internal_error',
-        });
+            'Authenticated',
+        );
+    } catch (err) {
+        console.error('signInController error', err);
+        return ResponseWriter.system_error(res);
     }
 };
