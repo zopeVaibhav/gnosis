@@ -1,11 +1,11 @@
 'use client';
 
-import Home from './home/page';
+import NavbarComponent from '@/src/components/NavbarComponent';
 
 export default function Page() {
     return (
-        <div className="flex flex-col items-center justify-center h-full gap-4">
-            <Home />
+        <div className="flex flex-col">
+            <NavbarComponent />
         </div>
     );
 }
