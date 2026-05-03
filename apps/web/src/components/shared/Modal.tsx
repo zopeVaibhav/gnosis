@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useEffect } from 'react';
+import IconButton from './IconButton';
 
 export interface ModalProps {
     open: boolean;
@@ -44,13 +45,13 @@ export default function Modal({ open, onClose, children, className }: ModalProps
                         transition={{ duration: 0.2, ease: 'easeOut' }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <button
+                        <IconButton
+                            icon={X}
+                            variant="surface"
+                            label="Close"
                             onClick={onClose}
-                            className="cursor-pointer absolute top-3 right-3 z-10 p-1 rounded-full border border-border text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
-                            aria-label="Close"
-                        >
-                            <X size={16} />
-                        </button>
+                            className="absolute top-3 right-3 z-10"
+                        />
                         {children}
                     </motion.div>
                 </motion.div>

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Session } from 'next-auth';
+import Button from './shared/Button';
 
 const tabs = ['Home', 'Features', 'Docs', 'Pricing'];
 
@@ -95,13 +96,7 @@ export default function NavbarComponent({ session }: { session: Session | null }
                         ></Image>
                     </div>
                 ) : (
-                    <button
-                        onClick={() => setAuthModalOpen(true)}
-                        className="px-4 py-1.5 rounded-full text-sm font-medium bg-primary text-foreground cursor-pointer
-                    hover:bg-primary-hover transition-colors"
-                    >
-                        Get Started
-                    </button>
+                    <Button label="Get Started" onClick={() => setAuthModalOpen(true)} />
                 )}
             </div>
             <SignInModal open={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} />
