@@ -1,5 +1,5 @@
 'use client';
-import { use, useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import SignInModal from './SignInModal';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
