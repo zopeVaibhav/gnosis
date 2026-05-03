@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import SignInModal from './SignInModal';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 const tabs = ['Home', 'Features', 'Docs', 'Pricing'];
 
@@ -32,7 +33,16 @@ export default function NavbarComponent() {
     return (
         <>
             <div className="flex  items-center justify-between p-4">
-                <span> GNOSIS </span>
+                <div className="flex items-center">
+                    <Image
+                        src="/logo-filled.png"
+                        alt="Gnosis"
+                        width={55}
+                        height={55}
+                        loading="eager"
+                    />
+                    <span className="font-semibold">GNOSIS</span>
+                </div>
                 <nav className="relative flex items-center gap-1 px-2 py-2 rounded-full border border-border border-b-3 bg-surface/80 backdrop-blur-md">
                     {indicatorStyle && (
                         <motion.div

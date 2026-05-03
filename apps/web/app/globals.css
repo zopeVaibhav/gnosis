@@ -16,9 +16,9 @@
     --border-strong: rgba(255, 255, 255, 0.13);
 
     /* Brand */
-    --primary: #4facfe;
-    --primary-hover: #74beff;
-    --primary-dim: rgba(79, 172, 254, 0.15);
+    --primary: #4f39f6;
+    --primary-hover: #615fff;
+    --primary-dim: rgba(79, 57, 246, 0.15);
 
     /* Accent */
     --accent: #00d4ff;
