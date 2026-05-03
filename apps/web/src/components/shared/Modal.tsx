@@ -1,6 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
+import { X } from 'lucide-react';
 import { useEffect } from 'react';
 
 export interface ModalProps {
@@ -43,6 +44,13 @@ export default function Modal({ open, onClose, children, className }: ModalProps
                         transition={{ duration: 0.2, ease: 'easeOut' }}
                         onClick={(e) => e.stopPropagation()}
                     >
+                        <button
+                            onClick={onClose}
+                            className="cursor-pointer absolute top-3 right-3 z-10 p-1 rounded-full border border-border text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+                            aria-label="Close"
+                        >
+                            <X size={16} />
+                        </button>
                         {children}
                     </motion.div>
                 </motion.div>
