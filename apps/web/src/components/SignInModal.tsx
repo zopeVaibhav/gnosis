@@ -18,8 +18,8 @@ export default function SignInModal({ open, onClose }: SignInModalProps) {
                 style={{
                     background: `
                         radial-gradient(ellipse 60% 35% at 50% 0%,
-                            rgba(245,158,11,0.18) 0%,
-                            rgba(245,158,11,0.06) 40%,
+                            rgba(79,172,254,0.22) 0%,
+                            rgba(0,212,255,0.07) 40%,
                             transparent 70%
                         )
                     `,
@@ -35,7 +35,7 @@ export default function SignInModal({ open, onClose }: SignInModalProps) {
                     width: 80,
                     height: 2,
                     background:
-                        'radial-gradient(ellipse at center, rgba(245,158,11,0.7) 0%, transparent 70%)',
+                        'radial-gradient(ellipse at center, rgba(79,172,254,0.8) 0%, transparent 70%)',
                     filter: 'blur(1px)',
                 }}
             />

@@ -33,13 +33,15 @@ export default function NavbarComponent() {
         <>
             <div className="flex  items-center justify-between p-4">
                 <span> GNOSIS </span>
-                <nav className="relative flex items-center gap-1 px-2 py-2 rounded-full border border-border bg-surface/80 backdrop-blur-md shadow-lg">
+                <nav className="relative flex items-center gap-1 px-2 py-2 rounded-full border border-border border-b-3 bg-surface/80 backdrop-blur-md">
                     {indicatorStyle && (
                         <motion.div
-                            className="absolute top-0 left-0 rounded-full bg-surface-raised pointer-events-none"
+                            className="absolute top-0 left-0 rounded-full bg-surface-raised pointer-events-none flex flex-col-reverse items-center"
                             animate={indicatorStyle}
                             transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                        />
+                        >
+                            <div className="h-1 w-1 bg-primary rounded-full"></div>
+                        </motion.div>
                     )}
 
                     {tabs.map((tab) => (
@@ -65,10 +67,10 @@ export default function NavbarComponent() {
                 </nav>
                 <button
                     onClick={() => setAuthModalOpen(true)}
-                    className="px-4 py-1.5 rounded-full text-sm font-medium bg-primary text-background cursor-pointer
+                    className="px-4 py-1.5 rounded-full text-sm font-medium bg-primary text-foreground cursor-pointer
                 hover:bg-primary-hover transition-colors"
                 >
-                    Sign In
+                    Get Started
                 </button>
             </div>
             <SignInModal open={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} />
