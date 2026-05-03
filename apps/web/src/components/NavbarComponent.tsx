@@ -1,12 +1,14 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { use, useLayoutEffect, useRef, useState } from 'react';
 import SignInModal from './SignInModal';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import Link from 'next/link';
+import { Session } from 'next-auth';
 
 const tabs = ['Home', 'Features', 'Docs', 'Pricing'];
 
-export default function NavbarComponent() {
+export default function NavbarComponent({ session }: { session: Session | null }) {
     const [isAuthModalOpen, setAuthModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('Home');
     const [hovered, setHovered] = useState<string | null>(null);
@@ -18,7 +20,7 @@ export default function NavbarComponent() {
         height: number;
     } | null>(null);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         const el = tabRefs.current[hovered ?? activeTab];
         if (el) {
             setIndicatorStyle({
@@ -47,6 +49,7 @@ export default function NavbarComponent() {
                     {indicatorStyle && (
                         <motion.div
                             className="absolute top-0 left-0 rounded-full bg-surface-raised pointer-events-none flex flex-col-reverse items-center"
+                            initial={false}
                             animate={indicatorStyle}
                             transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                         >
@@ -75,13 +78,31 @@ export default function NavbarComponent() {
                         </button>
                     ))}
                 </nav>
-                <button
-                    onClick={() => setAuthModalOpen(true)}
-                    className="px-4 py-1.5 rounded-full text-sm font-medium bg-primary text-foreground cursor-pointer
-                hover:bg-primary-hover transition-colors"
-                >
-                    Get Started
-                </button>
+                {session?.user ? (
+                    <div className="flex gap-2">
+                        <Link
+                            href="/home"
+                            className="px-4 py-1.5 rounded-full text-sm font-medium bg-primary text-foreground cursor-pointer hover:bg-primary-hover transition-colors"
+                        >
+                            Deep Dive
+                        </Link>
+                        <Image
+                            src={session.user?.image || '/logo-filled.svg'}
+                            alt="Profile"
+                            width={32}
+                            height={32}
+                            className="rounded-full"
+                        ></Image>
+                    </div>
+                ) : (
+                    <button
+                        onClick={() => setAuthModalOpen(true)}
+                        className="px-4 py-1.5 rounded-full text-sm font-medium bg-primary text-foreground cursor-pointer
+                    hover:bg-primary-hover transition-colors"
+                    >
+                        Get Started
+                    </button>
+                )}
             </div>
             <SignInModal open={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} />
         </>
