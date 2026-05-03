@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useEffect } from 'react';
+import { useKeyboardShortcut } from '../../hooks/useKeyboardShortcut';
 import IconButton from './IconButton';
 
 export interface ModalProps {
@@ -13,11 +14,7 @@ export interface ModalProps {
 }
 
 export default function Modal({ open, onClose, children, className }: ModalProps) {
-    useEffect(() => {
-        const handler = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-        document.addEventListener('keydown', handler);
-        return () => document.removeEventListener('keydown', handler);
-    }, [onClose]);
+    useKeyboardShortcut('Escape', onClose);
 
     useEffect(() => {
         document.body.style.overflow = open ? 'hidden' : '';

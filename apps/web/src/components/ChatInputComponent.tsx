@@ -1,6 +1,7 @@
 'use client';
 import { Plus, SendIcon, Upload, LucideIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { useKeyboardShortcut } from '../hooks/useKeyboardShortcut';
 import IconButton from './shared/IconButton';
 import Popover from './shared/Popover';
 
@@ -11,6 +12,7 @@ interface addSource {
     shortcut?: string;
     onClick: () => void;
 }
+
 const addSourceOptions: addSource[] = [
     {
         label: 'Upload File',
@@ -40,6 +42,8 @@ export default function ChatInputComponent() {
     const plusRef = useRef<HTMLButtonElement>(null);
 
     const [addSourcesPopover, setAddSourcesPopover] = useState(false);
+
+    useKeyboardShortcut('u', () => addSourceOptions[0]?.onClick(), { meta: true });
 
     const handleInput = () => {
         const el = ref.current;

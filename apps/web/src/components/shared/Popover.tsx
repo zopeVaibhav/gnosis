@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { RefObject, useEffect, useRef, useState, useLayoutEffect } from 'react';
+import { useKeyboardShortcut } from '../../hooks/useKeyboardShortcut';
 
 interface PopoverProps {
     anchorRef: RefObject<HTMLElement | null>;
@@ -53,8 +54,9 @@ export default function Popover({ anchorRef, children, open, onClose, className 
         return () => window.removeEventListener('resize', handleResize);
     }, [open, anchorRef]);
 
+    useKeyboardShortcut('Escape', onClose);
+
     useEffect(() => {
-        const handler = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
         const handleClickOutside = (e: MouseEvent) => {
             if (
                 popoverRef.current?.contains(e.target as Node) ||
@@ -63,12 +65,8 @@ export default function Popover({ anchorRef, children, open, onClose, className 
                 return;
             onClose();
         };
-        document.addEventListener('keydown', handler);
         document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('keydown', handler);
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [onClose, anchorRef]);
 
     return (
