@@ -14,6 +14,9 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
     title: 'Gnosis',
     description: 'AI Knowledgebase Summarizer',
+    icons: {
+        icon: '/favicon.svg',
+    },
 };
 
 export default async function RootLayout({
