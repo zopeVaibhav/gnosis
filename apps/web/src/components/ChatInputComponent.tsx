@@ -1,12 +1,13 @@
 'use client';
 import { Plus, SendIcon, Upload, LucideIcon } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useKeyboardShortcut } from '../hooks/useKeyboardShortcut';
 import IconButton from './shared/IconButton';
 import Popover from './shared/Popover';
 import { signIn } from 'next-auth/react';
 import { GoogleAuth } from '@gnosis/types';
 import { useUserSessionStore } from '../store/user/useUserSessionStore';
+import Image from 'next/image';
 
 interface AddSource {
     label: string;
@@ -60,20 +61,17 @@ export default function ChatInputComponent() {
     const plusRef = useRef<HTMLButtonElement>(null);
 
     const [addSourcesPopover, setAddSourcesPopover] = useState(false);
-    const [sources, setSources] = useState(addSourceOptions);
     const { integrations } = useUserSessionStore();
 
-    useEffect(() => {
-        const updated = addSourceOptions.map((source) =>
-            integrations?.find((value) => value.service === source.key)
-                ? {
-                      ...source,
-                      connected: true,
-                  }
-                : source,
-        );
-        setSources(updated);
-    }, [integrations]);
+    const sources = useMemo(
+        () =>
+            addSourceOptions.map((source) =>
+                integrations?.find((value) => value.service === source.key)
+                    ? { ...source, connected: true }
+                    : source,
+            ),
+        [integrations],
+    );
 
     useKeyboardShortcut('u', () => addSourceOptions[0]?.onClick(), { meta: true });
 
@@ -120,7 +118,7 @@ export default function ChatInputComponent() {
                                 >
                                     {item.icon && <item.icon size={16} />}
                                     {item.img && (
-                                        <img src={item.img} width={16} height={16} alt="" />
+                                        <Image src={item.img} width={16} height={16} alt="" />
                                     )}
                                     <span className="flex-1">{item.label}</span>
                                     {item.shortcut && (

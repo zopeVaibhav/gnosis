@@ -17,7 +17,7 @@ export default function SessionSetter({ session }: { session: Session | null }) 
         axios.get(GET_INTEGRATIONS).then((res) => {
             setIntegrations(res.data ?? null);
         });
-    }, [session]);
+    }, [session, setIntegrations]);
 
     return null;
 }
