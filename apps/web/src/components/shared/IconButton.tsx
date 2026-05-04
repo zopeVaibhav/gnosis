@@ -32,6 +32,7 @@ export default forwardRef<HTMLButtonElement, IconButtonProps>(function IconButto
     return (
         <button
             ref={ref}
+            type="button"
             aria-label={label}
             className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}
             disabled={disabled}
