@@ -1,10 +1,9 @@
-import { LINK_URL, SIGN_URL } from '@/routes/api-routes';
+import { LINK_INTEGRATION_URL, SIGN_URL } from '@/routes/api-routes';
 import { GoogleAuth } from '@gnosis/types';
 import axios from 'axios';
-import { Account, NextAuthOptions, Profile, User } from 'next-auth';
+import { Account, NextAuthOptions, Profile } from 'next-auth';
 import Github from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
-import { cookies } from 'next/headers';
 
 export type AppUser = {
     id?: string | null;
@@ -14,7 +13,14 @@ export type AppUser = {
     token?: string | null;
 };
 
-const isProd = process.env.NODE_ENV === 'production';
+export type AppToken = {
+    accessToken?: string;
+    refreshToken?: string;
+    accessTokenExpiresInSec?: number;
+    refreshTokenExpiresAt?: string;
+};
+
+export const isProd = process.env.NODE_ENV === 'production';
 
 export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET,
@@ -46,7 +52,7 @@ export const authOptions: NextAuthOptions = {
                 const isServiceLink = ['gmail', 'drive', 'calendar'].some((s) =>
                     account.scope?.includes(s),
                 );
-                const url = isServiceLink ? LINK_URL : SIGN_URL;
+                const url = isServiceLink ? LINK_INTEGRATION_URL : SIGN_URL;
 
                 const response = await axios.post(
                     url,
@@ -58,12 +64,17 @@ export const authOptions: NextAuthOptions = {
                         expiresAt: account.expires_at ?? null,
                     },
                     {
-                        withCredentials: true,
+                        headers: {
+                            'X-Internal-Secret': process.env.INTERNAL_API_SECRET ?? '',
+                        },
                     },
                 );
 
                 const result = response.data;
                 if (!result?.success) return false;
+
+                // service links don't return tokens — just confirm success and done
+                if (isServiceLink) return true;
 
                 const {
                     user: backendUser,
@@ -73,31 +84,17 @@ export const authOptions: NextAuthOptions = {
                     refreshTokenExpiresAt,
                 } = result.data;
 
-                user.id = String(backendUser.id);
+                user.id = String(backendUser?.id ?? '');
 
-                if (!accessToken) return true;
-
-                const cookieStore = await cookies();
-
-                cookieStore.set('accessToken', accessToken, {
-                    httpOnly: true,
-                    secure: isProd,
-                    sameSite: 'lax',
-                    path: '/',
-                    maxAge: accessTokenExpiresInSec,
-                });
-
-                cookieStore.set('refreshToken', refreshToken, {
-                    httpOnly: true,
-                    secure: isProd,
-                    sameSite: 'lax',
-                    path: '/',
-                    expires: new Date(refreshTokenExpiresAt),
-                });
+                // store tokens on user object so jwt callback can pick them up
+                (user as AppUser & AppToken).accessToken = accessToken;
+                (user as AppUser & AppToken).refreshToken = refreshToken;
+                (user as AppUser & AppToken).accessTokenExpiresInSec = accessTokenExpiresInSec;
+                (user as AppUser & AppToken).refreshTokenExpiresAt = refreshTokenExpiresAt;
 
                 return true;
             } catch (error) {
-                console.log(error);
+                console.error('signIn callback error', error);
                 return false;
             }
         },
@@ -105,12 +102,19 @@ export const authOptions: NextAuthOptions = {
         async jwt({ user, token }) {
             if (user) {
                 token.user = user;
+                const u = user as AppUser & AppToken;
+                if (u.accessToken) {
+                    token.accessToken = u.accessToken;
+                    token.refreshToken = u.refreshToken;
+                    token.accessTokenExpiresInSec = u.accessTokenExpiresInSec;
+                    token.refreshTokenExpiresAt = u.refreshTokenExpiresAt;
+                }
             }
             return token;
         },
 
         async session({ session, token }) {
-            session.user = token.user;
+            session.user = token.user as AppUser;
             return session;
         },
     },
