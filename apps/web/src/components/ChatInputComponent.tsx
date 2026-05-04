@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { useKeyboardShortcut } from '../hooks/useKeyboardShortcut';
 import IconButton from './shared/IconButton';
 import Popover from './shared/Popover';
+import { signIn } from 'next-auth/react';
 
 interface addSource {
     label: string;
@@ -21,14 +22,46 @@ const addSourceOptions: addSource[] = [
         onClick: () => console.log('Upload File'),
     },
     {
-        label: 'Google Drive',
-        img: '/icons/gdrive.svg',
-        onClick: () => console.log('Google Drive'),
+        label: 'Gmail',
+        img: '/icons/gmail.svg',
+        onClick: () =>
+            signIn(
+                'google',
+                { callbackUrl: '/' },
+                {
+                    scope: 'openid email profile https://www.googleapis.com/auth/gmail.readonly',
+                    prompt: 'consent',
+                    access_type: 'offline',
+                },
+            ),
     },
     {
-        label: 'Gmail with Calendar',
+        label: 'Google Drive',
+        img: '/icons/gdrive.svg',
+        onClick: () =>
+            signIn(
+                'google',
+                { callbackUrl: '/' },
+                {
+                    scope: 'openid email profile https://www.googleapis.com/auth/drive.readonly',
+                    prompt: 'consent',
+                    access_type: 'offline',
+                },
+            ),
+    },
+    {
+        label: 'Google Calendar',
         img: '/icons/gcalendar.svg',
-        onClick: () => console.log('Gmail'),
+        onClick: () =>
+            signIn(
+                'google',
+                { callbackUrl: '/' },
+                {
+                    scope: 'openid email profile https://www.googleapis.com/auth/calendar.readonly',
+                    prompt: 'consent',
+                    access_type: 'offline',
+                },
+            ),
     },
     {
         label: 'Github',

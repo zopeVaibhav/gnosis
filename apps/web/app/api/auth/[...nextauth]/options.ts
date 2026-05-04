@@ -1,4 +1,4 @@
-import { SIGN_URL } from '@/routes/api-routes';
+import { LINK_URL, SIGN_URL } from '@/routes/api-routes';
 import axios from 'axios';
 import { Account, NextAuthOptions, Profile, User } from 'next-auth';
 import Github from 'next-auth/providers/github';
@@ -42,8 +42,13 @@ export const authOptions: NextAuthOptions = {
 
                 if (!user.email) return false;
 
+                const isServiceLink = ['gmail', 'drive', 'calendar'].some((s) =>
+                    account.scope?.includes(s),
+                );
+                const url = isServiceLink ? LINK_URL : SIGN_URL;
+
                 const response = await axios.post(
-                    SIGN_URL,
+                    url,
                     {
                         ...account,
                         ...user,
@@ -67,6 +72,10 @@ export const authOptions: NextAuthOptions = {
                     refreshTokenExpiresAt,
                 } = result.data;
 
+                user.id = String(backendUser.id);
+
+                if (!accessToken) return true;
+
                 const cookieStore = await cookies();
 
                 cookieStore.set('accessToken', accessToken, {
@@ -85,7 +94,6 @@ export const authOptions: NextAuthOptions = {
                     expires: new Date(refreshTokenExpiresAt),
                 });
 
-                user.id = String(backendUser.id);
                 return true;
             } catch (error) {
                 console.log(error);
