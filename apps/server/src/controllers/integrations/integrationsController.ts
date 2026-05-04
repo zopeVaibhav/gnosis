@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { ResponseWriter } from '../../utility/responseWriter';
 import { prisma } from '@gnosis/database';
 import { signInSchema } from '../../schemas/signInSchema';
-import { signInController } from '../auth/signInController';
 
 export const linkAccountController = async (req: Request, res: Response) => {
     try {
@@ -17,7 +16,8 @@ export const linkAccountController = async (req: Request, res: Response) => {
                 email: data?.email,
             },
         });
-        if (!user) return signInController(req, res);
+
+        if (!user) return ResponseWriter.not_found(res, 'User not found');
 
         const existingAccount = await prisma.account.findUnique({
             where: {
@@ -83,7 +83,7 @@ export const getIntegrations = async (req: Request, res: Response) => {
             return [{ service: account.provider, connected: true }];
         });
 
-        return ResponseWriter.success(res, { connections }, 'Integration fetched');
+        return ResponseWriter.success(res, connections, 'Integration fetched');
     } catch (error) {
         console.error('getIntegraionsError', error);
         ResponseWriter.system_error(res, 'Failed to fetch connectors');

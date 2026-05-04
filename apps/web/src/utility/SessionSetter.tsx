@@ -17,7 +17,7 @@ export default function SessionSetter({ session }: { session: Session | null }) 
         const init = async () => {
             await fetch('/api/auth/sync-session', { method: 'POST' });
             const response = await axios.get(GET_INTEGRATIONS, { withCredentials: true });
-            setIntegrations(response.data?.data?.connections ?? null);
+            setIntegrations(response.data ?? null);
         };
         init();
     }, [session]);

@@ -1,14 +1,17 @@
 'use client';
 import { Plus, SendIcon, Upload, LucideIcon } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useKeyboardShortcut } from '../hooks/useKeyboardShortcut';
 import IconButton from './shared/IconButton';
 import Popover from './shared/Popover';
 import { signIn } from 'next-auth/react';
 import { GoogleAuth } from '@gnosis/types';
+import { useUserSessionStore } from '../store/user/useUserSessionStore';
 
 interface AddSource {
     label: string;
+    key?: string;
+    connected?: boolean;
     icon?: LucideIcon;
     img?: string;
     shortcut?: string;
@@ -24,23 +27,31 @@ const addSourceOptions: AddSource[] = [
     },
     {
         label: 'Gmail',
+        key: 'gmail',
+        connected: false,
         img: '/icons/gmail.svg',
         onClick: () => signIn('google', { callbackUrl: '/' }, GoogleAuth.gmail),
     },
     {
         label: 'Google Drive',
+        key: 'drive',
+        connected: false,
         img: '/icons/gdrive.svg',
         onClick: () => signIn('google', { callbackUrl: '/' }, GoogleAuth.drive),
     },
     {
         label: 'Google Calendar',
+        key: 'calendar',
+        connected: false,
         img: '/icons/gcalendar.svg',
         onClick: () => signIn('google', { callbackUrl: '/' }, GoogleAuth.calendar),
     },
     {
         label: 'Github',
+        key: 'github',
+        connected: false,
         img: '/icons/github.svg',
-        onClick: () => console.log('Github'),
+        onClick: () => signIn('github', { callbackUrl: '/' }),
     },
 ];
 
@@ -49,6 +60,20 @@ export default function ChatInputComponent() {
     const plusRef = useRef<HTMLButtonElement>(null);
 
     const [addSourcesPopover, setAddSourcesPopover] = useState(false);
+    const [sources, setSources] = useState(addSourceOptions);
+    const { integrations } = useUserSessionStore();
+
+    useEffect(() => {
+        const updated = addSourceOptions.map((source) =>
+            integrations?.find((value) => value.service === source.key)
+                ? {
+                      ...source,
+                      connected: true,
+                  }
+                : source,
+        );
+        setSources(updated);
+    }, [integrations]);
 
     useKeyboardShortcut('u', () => addSourceOptions[0]?.onClick(), { meta: true });
 
@@ -87,7 +112,7 @@ export default function ChatInputComponent() {
                             onClose={() => setAddSourcesPopover(false)}
                             className="text-sm p-2"
                         >
-                            {addSourceOptions.map((item, key) => (
+                            {sources.map((item, key) => (
                                 <div
                                     key={key}
                                     className="group flex items-center gap-2 hover:bg-surface-faded p-2 rounded-lg cursor-pointer"
@@ -103,6 +128,12 @@ export default function ChatInputComponent() {
                                             {item.shortcut}
                                         </span>
                                     )}
+                                    {item.key &&
+                                        (item.connected ? (
+                                            <span className="bg-green-500 h-2 w-2 rounded-full animate-pulse"></span>
+                                        ) : (
+                                            <span className="bg-red-500 h-2 w-2 rounded-full animate-pulse"></span>
+                                        ))}
                                 </div>
                             ))}
                         </Popover>

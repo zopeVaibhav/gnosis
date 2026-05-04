@@ -10,7 +10,7 @@ axios.defaults.withCredentials = true;
 export default function AxiosBootstrap() {
     useEffect(() => {
         const id = axios.interceptors.response.use(
-            (response) => response,
+            (response) => ({ ...response, data: response.data?.data ?? response.data }),
             (error) => {
                 if (error.response?.status === 401 && typeof window !== 'undefined') {
                     window.location.href = '/';
