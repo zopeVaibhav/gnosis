@@ -1,4 +1,5 @@
 import { LINK_URL, SIGN_URL } from '@/routes/api-routes';
+import { GoogleAuth } from '@gnosis/types';
 import axios from 'axios';
 import { Account, NextAuthOptions, Profile, User } from 'next-auth';
 import Github from 'next-auth/providers/github';
@@ -118,12 +119,7 @@ export const authOptions: NextAuthOptions = {
             clientId: process.env.GOOGLE_CLIENT_ID!,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
             authorization: {
-                params: {
-                    prompt: 'consent',
-                    access_type: 'offline',
-                    response_type: 'code',
-                    scope: ['openid', 'email', 'profile'].join(' '),
-                },
+                params: GoogleAuth.provider,
             },
         }),
         Github({

@@ -5,8 +5,9 @@ import { useKeyboardShortcut } from '../hooks/useKeyboardShortcut';
 import IconButton from './shared/IconButton';
 import Popover from './shared/Popover';
 import { signIn } from 'next-auth/react';
+import { GoogleAuth } from '@gnosis/types';
 
-interface addSource {
+interface AddSource {
     label: string;
     icon?: LucideIcon;
     img?: string;
@@ -14,7 +15,7 @@ interface addSource {
     onClick: () => void;
 }
 
-const addSourceOptions: addSource[] = [
+const addSourceOptions: AddSource[] = [
     {
         label: 'Upload File',
         icon: Upload,
@@ -24,44 +25,17 @@ const addSourceOptions: addSource[] = [
     {
         label: 'Gmail',
         img: '/icons/gmail.svg',
-        onClick: () =>
-            signIn(
-                'google',
-                { callbackUrl: '/' },
-                {
-                    scope: 'openid email profile https://www.googleapis.com/auth/gmail.readonly',
-                    prompt: 'consent',
-                    access_type: 'offline',
-                },
-            ),
+        onClick: () => signIn('google', { callbackUrl: '/' }, GoogleAuth.gmail),
     },
     {
         label: 'Google Drive',
         img: '/icons/gdrive.svg',
-        onClick: () =>
-            signIn(
-                'google',
-                { callbackUrl: '/' },
-                {
-                    scope: 'openid email profile https://www.googleapis.com/auth/drive.readonly',
-                    prompt: 'consent',
-                    access_type: 'offline',
-                },
-            ),
+        onClick: () => signIn('google', { callbackUrl: '/' }, GoogleAuth.drive),
     },
     {
         label: 'Google Calendar',
         img: '/icons/gcalendar.svg',
-        onClick: () =>
-            signIn(
-                'google',
-                { callbackUrl: '/' },
-                {
-                    scope: 'openid email profile https://www.googleapis.com/auth/calendar.readonly',
-                    prompt: 'consent',
-                    access_type: 'offline',
-                },
-            ),
+        onClick: () => signIn('google', { callbackUrl: '/' }, GoogleAuth.calendar),
     },
     {
         label: 'Github',
