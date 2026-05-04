@@ -14,12 +14,9 @@ export default function SessionSetter({ session }: { session: Session | null }) 
 
     useEffect(() => {
         if (!session) return;
-        const init = async () => {
-            await fetch('/api/auth/sync-session', { method: 'POST' });
-            const response = await axios.get(GET_INTEGRATIONS, { withCredentials: true });
-            setIntegrations(response.data ?? null);
-        };
-        init();
+        axios.get(GET_INTEGRATIONS).then((res) => {
+            setIntegrations(res.data ?? null);
+        });
     }, [session]);
 
     return null;
