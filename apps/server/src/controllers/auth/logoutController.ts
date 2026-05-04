@@ -10,7 +10,7 @@ const isProd = env.NODE_ENV === 'production';
 const clearOptions = {
     httpOnly: true,
     secure: isProd,
-    sameSite: 'lax' as const,
+    sameSite: 'strict' as const,
     path: '/',
 };
 

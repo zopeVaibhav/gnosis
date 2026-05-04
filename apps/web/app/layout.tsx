@@ -5,6 +5,7 @@ import SessionSetter from '@/src/utility/SessionSetter';
 import AxiosBootstrap from '@/src/utility/AxiosBootstrap';
 import { getServerSession } from 'next-auth';
 import { authOptions } from './api/auth/[...nextauth]/options';
+import ToastProvider from '@/src/lib/ToastProvider';
 
 const dmSans = DM_Sans({
     variable: '--font-dm-sans',
@@ -14,6 +15,9 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
     title: 'Gnosis',
     description: 'AI Knowledgebase Summarizer',
+    icons: {
+        icon: '/favicon.svg',
+    },
 };
 
 export default async function RootLayout({
@@ -28,6 +32,7 @@ export default async function RootLayout({
                 {children}
                 <SessionSetter session={session} />
                 <AxiosBootstrap />
+                <ToastProvider />
             </body>
         </html>
     );

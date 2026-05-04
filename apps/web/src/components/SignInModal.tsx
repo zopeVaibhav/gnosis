@@ -27,16 +27,10 @@ export default function SignInModal({ open, onClose }: SignInModalProps) {
             />
             {/* Bright source dot at top edge */}
             <div
-                className="absolute pointer-events-none"
+                className="absolute left-1/2 -translate-x-1/2 w-20 h-0.5 blur-[10px]"
                 style={{
-                    top: -1,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: 80,
-                    height: 2,
                     background:
                         'radial-gradient(ellipse at center, rgba(79,57,246,0.8) 0%, transparent 70%)',
-                    filter: 'blur(1px)',
                 }}
             />
 
@@ -52,7 +46,9 @@ export default function SignInModal({ open, onClose }: SignInModalProps) {
                 {/* OAuth buttons — stacked */}
                 <div className="flex flex-col gap-3 w-full">
                     <button
-                        onClick={() => signIn('google', { callbackUrl: '/home' })}
+                        onClick={() =>
+                            signIn('google', { callbackUrl: '/api/auth/finalize?callbackUrl=/' })
+                        }
                         className="flex items-center justify-center gap-2.5 w-full rounded-full px-4 py-2.5 text-sm font-medium cursor-pointer transition-all border border-border bg-surface-raised text-foreground hover:bg-surface-faded"
                     >
                         <Image src="/icons/google.png" alt="Google" width={16} height={16} />
@@ -60,7 +56,9 @@ export default function SignInModal({ open, onClose }: SignInModalProps) {
                     </button>
 
                     <button
-                        onClick={() => signIn('github', { callbackUrl: '/home' })}
+                        onClick={() =>
+                            signIn('github', { callbackUrl: '/api/auth/finalize?callbackUrl=/' })
+                        }
                         className="flex items-center justify-center gap-2.5 w-full rounded-full px-4 py-2.5 text-sm font-medium cursor-pointer transition-all border border-border bg-surface-raised text-foreground hover:bg-surface-faded"
                     >
                         <Image

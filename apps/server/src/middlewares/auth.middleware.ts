@@ -18,7 +18,7 @@ const isProd = env.NODE_ENV === 'production';
 const cookieBase = {
     httpOnly: true,
     secure: isProd,
-    sameSite: 'lax' as const,
+    sameSite: 'strict' as const,
     path: '/',
 };
 
@@ -31,7 +31,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
             req.user = { id: payload.userId };
             return next();
         } catch {
-            // expired or invalid → fall through to refresh
+            // expired or invalid — fall through to refresh rotation below
         }
     }
 
