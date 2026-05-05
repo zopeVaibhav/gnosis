@@ -14,4 +14,5 @@ export const LINK_INTEGRATION_URL = API_URL + '/integrations/link';
 
 // chats routes
 export const SEND_MESSAGE = API_URL + '/chat/send-message';
-export const GET_CHATS = API_URL + '/chat/get-messages';
+export const GET_CHATS = API_URL + '/chat/get-chats';
+export const GET_MESSAGES = (id: string) => `${API_URL}/chat/get-messages/${id}`;

@@ -3,3 +3,8 @@ export enum STREAM_MESSAGE {
     CHAT_CREATED = 'CHAT_CREATED',
     COMPLETED = 'COMPLETED',
 }
+
+export enum ROLE {
+    USER = 'USER',
+    ASSISTANT = 'ASSISTANT',
+}

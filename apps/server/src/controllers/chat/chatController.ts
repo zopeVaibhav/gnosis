@@ -3,8 +3,8 @@ import { ResponseWriter } from '../../utility/responseWriter';
 import graph from '../../agent/graph';
 import { AIMessage, HumanMessage } from '@langchain/core/messages';
 import { chatSchema } from '../../schemas/chatSchema';
-import { prisma, ROLE } from '@gnosis/database';
-import { STREAM_MESSAGE } from '@gnosis/types';
+import { prisma } from '@gnosis/database';
+import { ROLE, STREAM_MESSAGE } from '@gnosis/types';
 
 export const chatController = async (req: Request, res: Response) => {
     const parsed = chatSchema.safeParse(req.body);
