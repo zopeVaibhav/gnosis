@@ -10,13 +10,21 @@ import {
     MessageCircle,
     LogOut,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
 import AppLogoComponent from './AppLogo';
 import IconButton from './shared/IconButton';
 import LogoutModal from './LogoutModal';
 import { useKeyboardShortcut } from '../hooks/useKeyboardShortcut';
 import Image from 'next/image';
 import { useUserSessionStore } from '../store/user/useUserSessionStore';
+import { GET_CHATS } from '@/routes/api-routes';
+
+interface ChatItem {
+    id: string;
+    title: string | null;
+}
 
 interface IsiderMenu {
     icon: LucideIcon;
@@ -41,8 +49,18 @@ const sidebarMenu: IsiderMenu[] = [
 export default function ChatsSidebar() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [logoutOpen, setLogoutOpen] = useState(false);
+    const [chats, setChats] = useState<ChatItem[]>([]);
     const { session } = useUserSessionStore();
+    const router = useRouter();
+
     useKeyboardShortcut('b', () => setSidebarOpen((v) => !v), { meta: true });
+
+    useEffect(() => {
+        axios
+            .get(GET_CHATS)
+            .then((res) => setChats(res.data ?? []))
+            .catch(() => {});
+    }, []);
 
     return (
         <motion.div
@@ -94,7 +112,18 @@ export default function ChatsSidebar() {
 
             {/* RECENT CHATS */}
             {sidebarOpen ? (
-                <div className="p-2 text-xs font-light mt-5">Recents</div>
+                <div className="flex flex-col mt-5 min-h-0 flex-1 overflow-y-auto">
+                    <div className="p-2 text-xs font-light text-muted">Recents</div>
+                    {chats.map((chat) => (
+                        <div
+                            key={chat.id}
+                            className="p-2 text-sm truncate cursor-pointer hover:bg-surface-faded rounded-lg"
+                            onClick={() => router.push(`/chat/${chat.id}`)}
+                        >
+                            {chat.title || 'New chat'}
+                        </div>
+                    ))}
+                </div>
             ) : (
                 <IconButton icon={MessageCircle} />
             )}

@@ -13,4 +13,5 @@ export const GET_INTEGRATIONS = API_URL + '/integrations';
 export const LINK_INTEGRATION_URL = API_URL + '/integrations/link';
 
 // chats routes
-export const SEND_MESSAGE = API_URL + '/chat';
+export const SEND_MESSAGE = API_URL + '/chat/send-message';
+export const GET_CHATS = API_URL + '/chat/get-messages';
