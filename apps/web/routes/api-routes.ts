@@ -5,6 +5,7 @@ export const API_URL = BACKEND_URL + '/api/v1';
 
 // auth routes
 export const SIGN_URL = API_URL + '/auth/signin';
+export const REFRESH_URL = API_URL + '/auth/refresh';
 export const LOGOUT_URL = API_URL + '/auth/logout';
 
 // integrations routes
