@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Session } from 'next-auth';
 import Button from './shared/Button';
+import AppLogoComponent from './AppLogo';
 
 const tabs = ['Home', 'Features', 'Docs', 'Pricing'];
 
@@ -36,16 +37,7 @@ export default function NavbarComponent({ session }: { session: Session | null }
     return (
         <>
             <div className="flex  items-center justify-between p-4">
-                <div className="flex items-center">
-                    <Image
-                        src="/logo-filled.png"
-                        alt="Gnosis"
-                        width={55}
-                        height={55}
-                        loading="eager"
-                    />
-                    <span className="font-semibold">GNOSIS</span>
-                </div>
+                <AppLogoComponent />
                 <nav className="relative flex items-center gap-1 px-2 py-2 rounded-full border border-border border-b-3 bg-surface/80 backdrop-blur-md">
                     {indicatorStyle && (
                         <motion.div
@@ -82,8 +74,8 @@ export default function NavbarComponent({ session }: { session: Session | null }
                 {session?.user ? (
                     <div className="flex gap-2">
                         <Link
-                            href="/home"
-                            className="px-4 py-1.5 rounded-full text-sm font-medium bg-primary text-foreground cursor-pointer hover:bg-primary-hover transition-colors"
+                            href="/new"
+                            className="px-4 py-1.5 rounded-full text-sm font-medium bg-primary cursor-pointer hover:bg-primary-hover transition-colors"
                         >
                             Deep Dive
                         </Link>
