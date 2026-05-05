@@ -10,7 +10,7 @@ export const chatController = async (req: Request, res: Response) => {
     const parsed = chatSchema.safeParse(req.body);
     if (!parsed.success) return ResponseWriter.invalid_data(res, 'Invalid Data');
 
-    const { message, chatId } = parsed.data;
+    const { message, id } = parsed.data;
     const userId = req.user.id;
 
     res.setHeader('Content-Type', 'text/event-stream');
@@ -18,8 +18,8 @@ export const chatController = async (req: Request, res: Response) => {
     res.setHeader('Connection', 'keep-alive');
 
     try {
-        const isNewChat = !chatId;
-        let activeChatId = chatId;
+        const isNewChat = !id;
+        let activeChatId = id;
 
         if (isNewChat) {
             const chat = await prisma.chat.create({ data: { userId } });

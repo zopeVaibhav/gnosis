@@ -23,8 +23,8 @@ export default function ChatPage() {
     }, [id]);
 
     return (
-        <div className="flex flex-col flex-1">
-            <div className="flex-1 overflow-y-auto p-4">
+        <>
+            <div className="w-3xl flex-1 py-4">
                 {messages.map((m) => (
                     <div
                         key={m.id}
@@ -38,9 +38,9 @@ export default function ChatPage() {
                     </div>
                 ))}
             </div>
-            <div className="p-4">
-                <ChatInputComponent />
+            <div className="pb-4 sticky bottom-0 z-50 bg-background w-3xl">
+                <ChatInputComponent id={id} />
             </div>
-        </div>
+        </>
     );
 }

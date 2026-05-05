@@ -58,7 +58,7 @@ const addSourceOptions: AddSource[] = [
     },
 ];
 
-export default function ChatInputComponent() {
+export default function ChatInputComponent({ id = '' }) {
     const ref = useRef<HTMLTextAreaElement>(null);
     const plusRef = useRef<HTMLButtonElement>(null);
 
@@ -77,10 +77,16 @@ export default function ChatInputComponent() {
     };
 
     const sendMessage = async (message: string) => {
+        const trimmed = message.trim();
+        if (!trimmed) return;
         try {
-            const response = await axios.post(SEND_MESSAGE, { message: message.trim() });
+            const response = await axios.post(SEND_MESSAGE, { message: trimmed, id });
             console.log(response.data);
             setMessage('');
+            if (ref.current) {
+                ref.current.style.height = 'auto';
+                ref.current.style.overflowY = 'hidden';
+            }
         } catch {
             // error already toasted by the Axios interceptor
         }
@@ -117,8 +123,9 @@ export default function ChatInputComponent() {
 
     return (
         <div className="flex items-center justify-center">
-            <div className="border border-border p-4 pb-2 rounded-xl w-2xl shadow-sm shadow-primary">
+            <div className="border border-border p-4 pb-2 rounded-xl w-full shadow-sm shadow-primary">
                 <textarea
+                    value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     ref={ref}
                     rows={1}

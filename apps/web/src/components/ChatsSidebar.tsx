@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import AppLogoComponent from './AppLogo';
 import IconButton from './shared/IconButton';
 import LogoutModal from './LogoutModal';
@@ -50,8 +50,10 @@ export default function ChatsSidebar() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [logoutOpen, setLogoutOpen] = useState(false);
     const [chats, setChats] = useState<ChatItem[]>([]);
+    const [loadingChats, setLoadingChats] = useState(true);
     const { session } = useUserSessionStore();
     const router = useRouter();
+    const { id: activeChatId } = useParams<{ id?: string }>();
 
     useKeyboardShortcut('b', () => setSidebarOpen((v) => !v), { meta: true });
 
@@ -59,7 +61,8 @@ export default function ChatsSidebar() {
         axios
             .get(GET_CHATS)
             .then((res) => setChats(res.data ?? []))
-            .catch(() => {});
+            .catch(() => {})
+            .finally(() => setLoadingChats(false));
     }, []);
 
     return (
@@ -114,15 +117,24 @@ export default function ChatsSidebar() {
             {sidebarOpen ? (
                 <div className="flex flex-col mt-5 min-h-0 flex-1 overflow-y-auto">
                     <div className="p-2 text-xs font-light text-muted">Recents</div>
-                    {chats.map((chat) => (
-                        <div
-                            key={chat.id}
-                            className="p-2 text-sm truncate cursor-pointer hover:bg-surface-faded rounded-lg"
-                            onClick={() => router.push(`/chat/${chat.id}`)}
-                        >
-                            {chat.title || 'New chat'}
-                        </div>
-                    ))}
+                    {loadingChats
+                        ? Array.from({ length: 6 }).map((_, idx) => (
+                              <div key={idx} className="p-2">
+                                  <div
+                                      className="h-4 rounded bg-surface-faded animate-pulse"
+                                      style={{ width: `${60 + ((idx * 13) % 35)}%` }}
+                                  />
+                              </div>
+                          ))
+                        : chats.map((chat) => (
+                              <div
+                                  key={chat.id}
+                                  className={`p-2 text-sm truncate mb-0.5 cursor-pointer hover:bg-surface-faded rounded-lg ${chat.id === activeChatId ? 'bg-surface-faded' : ''}`}
+                                  onClick={() => router.push(`/chat/${chat.id}`)}
+                              >
+                                  {chat.title || 'New chat'}
+                              </div>
+                          ))}
                 </div>
             ) : (
                 <IconButton icon={MessageCircle} />
