@@ -2,11 +2,17 @@
 
 import Image from 'next/image';
 
-export default function AppLogoComponent() {
+export default function AppLogoComponent({ iconOnly = false, textOnly = false }) {
     return (
         <div className="flex items-center">
-            <Image src="/logo-filled.png" alt="Gnosis" width={32} height={32} loading="eager" />
-            <span className="font-semibold mx-3">GNOSIS</span>
+            {!textOnly && (
+                <Image src="/logo-filled.png" alt="Gnosis" width={32} height={32} loading="eager" />
+            )}
+            {!iconOnly && (
+                <span className={`font-semibold text-xl ${!textOnly && !iconOnly ? 'mx-2' : ''}`}>
+                    Gnosis
+                </span>
+            )}
         </div>
     );
 }
