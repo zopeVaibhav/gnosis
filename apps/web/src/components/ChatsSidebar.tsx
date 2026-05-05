@@ -8,11 +8,15 @@ import {
     PanelLeftClose,
     PanelRightOpen,
     MessageCircle,
+    LogOut,
 } from 'lucide-react';
 import { useState } from 'react';
 import AppLogoComponent from './AppLogo';
 import IconButton from './shared/IconButton';
+import LogoutModal from './LogoutModal';
 import { useKeyboardShortcut } from '../hooks/useKeyboardShortcut';
+import Image from 'next/image';
+import { useUserSessionStore } from '../store/user/useUserSessionStore';
 
 interface IsiderMenu {
     icon: LucideIcon;
@@ -36,11 +40,13 @@ const sidebarMenu: IsiderMenu[] = [
 ];
 export default function ChatsSidebar() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [logoutOpen, setLogoutOpen] = useState(false);
+    const { session } = useUserSessionStore();
     useKeyboardShortcut('b', () => setSidebarOpen((v) => !v), { meta: true });
 
     return (
         <motion.div
-            className="border-r border-border h-full overflow-hidden p-2 py-3"
+            className="border-r border-border h-full overflow-hidden p-2 py-3 flex flex-col"
             initial={false}
             animate={{
                 width: sidebarOpen ? 280 : 55,
@@ -92,6 +98,30 @@ export default function ChatsSidebar() {
             ) : (
                 <IconButton icon={MessageCircle} />
             )}
+
+            <div className="mt-auto flex gap-2 items-center p-2 bg-surface-faded rounded-lg">
+                <Image
+                    src={session?.user?.image || '/logo-filled.svg'}
+                    alt="Profile"
+                    width={32}
+                    height={32}
+                    className="rounded-full shrink-0"
+                />
+                {sidebarOpen && (
+                    <>
+                        <span className="text-sm truncate min-w-0 flex-1">
+                            {session?.user.name}
+                        </span>
+                        <IconButton
+                            icon={LogOut}
+                            label="Logout"
+                            onClick={() => setLogoutOpen(true)}
+                        />
+                    </>
+                )}
+            </div>
+
+            <LogoutModal open={logoutOpen} onClose={() => setLogoutOpen(false)} />
         </motion.div>
     );
 }
