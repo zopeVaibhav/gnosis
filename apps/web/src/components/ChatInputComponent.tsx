@@ -66,6 +66,16 @@ export default function ChatInputComponent() {
     const [message, setMessage] = useState('');
     const { integrations } = useUserSessionStore();
 
+    const handleInput = () => {
+        const el = ref.current;
+        if (!el) return;
+        const lineHeight = parseInt(getComputedStyle(el).lineHeight);
+        const maxHeight = lineHeight * 6;
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, maxHeight) + 'px';
+        el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
+    };
+
     const sendMessage = async (message: string) => {
         try {
             const response = await axios.post(SEND_MESSAGE, { message: message.trim() });
@@ -104,16 +114,6 @@ export default function ChatInputComponent() {
     );
     // meta + u for upload media
     useKeyboardShortcut('u', () => addSourceOptions[0]?.onClick(), { meta: true });
-
-    const handleInput = () => {
-        const el = ref.current;
-        if (!el) return;
-        const lineHeight = parseInt(getComputedStyle(el).lineHeight);
-        const maxHeight = lineHeight * 6;
-        el.style.height = 'auto';
-        el.style.height = Math.min(el.scrollHeight, maxHeight) + 'px';
-        el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
-    };
 
     return (
         <div className="flex items-center justify-center flex-1">

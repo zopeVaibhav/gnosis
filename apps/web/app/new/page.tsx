@@ -41,7 +41,7 @@ export default function NewPage() {
             <div className="flex flex-col w-full h-full items-center justify-center">
                 <div>
                     <div className="text-3xl w-full text-center mb-8">
-                        What's on you Mind Today?
+                        <p>What&apos;s on your mind today?</p>
                     </div>
                     <ChatInputComponent />
                 </div>
