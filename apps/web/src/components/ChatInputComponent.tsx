@@ -8,6 +8,8 @@ import { signIn } from 'next-auth/react';
 import { GoogleAuth } from '@gnosis/types';
 import { useUserSessionStore } from '../store/user/useUserSessionStore';
 import Image from 'next/image';
+import axios from 'axios';
+import { SEND_MESSAGE } from '@/routes/api-routes';
 
 interface AddSource {
     label: string;
@@ -61,19 +63,8 @@ export default function ChatInputComponent() {
     const plusRef = useRef<HTMLButtonElement>(null);
 
     const [addSourcesPopover, setAddSourcesPopover] = useState(false);
+    const [message, setMessage] = useState('');
     const { integrations } = useUserSessionStore();
-
-    const sources = useMemo(
-        () =>
-            addSourceOptions.map((source) =>
-                integrations?.find((value) => value.service === source.key)
-                    ? { ...source, connected: true }
-                    : source,
-            ),
-        [integrations],
-    );
-
-    useKeyboardShortcut('u', () => addSourceOptions[0]?.onClick(), { meta: true });
 
     const handleInput = () => {
         const el = ref.current;
@@ -85,10 +76,50 @@ export default function ChatInputComponent() {
         el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
     };
 
+    const sendMessage = async (message: string) => {
+        try {
+            const response = await axios.post(SEND_MESSAGE, { message: message.trim() });
+            console.log(response.data);
+            setMessage('');
+        } catch {
+            // error already toasted by the Axios interceptor
+        }
+    };
+
+    const sources = useMemo(
+        () =>
+            addSourceOptions.map((source) =>
+                integrations?.find((value) => value.service === source.key)
+                    ? { ...source, connected: true }
+                    : source,
+            ),
+        [integrations],
+    );
+    // send message
+    useKeyboardShortcut('Enter', () => sendMessage(message));
+    // meta + enter to next line
+    useKeyboardShortcut(
+        'Enter',
+        () => {
+            const el = ref.current;
+            if (!el) return;
+            const { selectionStart, selectionEnd, value } = el;
+            const next = value.slice(0, selectionStart) + '\n' + value.slice(selectionEnd);
+            el.value = next;
+            el.selectionStart = el.selectionEnd = selectionStart + 1;
+            setMessage(next);
+            handleInput();
+        },
+        { meta: true },
+    );
+    // meta + u for upload media
+    useKeyboardShortcut('u', () => addSourceOptions[0]?.onClick(), { meta: true });
+
     return (
         <div className="flex items-center justify-center flex-1">
             <div className="border border-border p-4 pb-2 rounded-xl w-2xl shadow-sm shadow-primary">
                 <textarea
+                    onChange={(e) => setMessage(e.target.value)}
                     ref={ref}
                     rows={1}
                     onInput={handleInput}
@@ -118,7 +149,12 @@ export default function ChatInputComponent() {
                                 >
                                     {item.icon && <item.icon size={16} />}
                                     {item.img && (
-                                        <Image src={item.img} width={16} height={16} alt="" />
+                                        <Image
+                                            src={item.img}
+                                            width={16}
+                                            height={16}
+                                            alt={item.key ?? ''}
+                                        />
                                     )}
                                     <span className="flex-1">{item.label}</span>
                                     {item.shortcut && (
@@ -136,7 +172,11 @@ export default function ChatInputComponent() {
                             ))}
                         </Popover>
                     </div>
-                    <IconButton icon={SendIcon} label="Send Icon" />
+                    <IconButton
+                        onClick={(e) => sendMessage(message)}
+                        icon={SendIcon}
+                        label="Send Icon"
+                    />
                 </div>
             </div>
         </div>

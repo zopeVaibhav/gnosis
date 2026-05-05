@@ -4,7 +4,7 @@ import { forwardRef } from 'react';
 
 interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     icon: LucideIcon;
-    label: string;
+    label?: string;
     size?: 'sm' | 'md' | 'lg';
     variant?: 'ghost' | 'surface' | 'primary';
 }
@@ -18,7 +18,7 @@ export default forwardRef<HTMLButtonElement, IconButtonProps>(function IconButto
 
     const sizes = {
         sm: 'w-7 h-7 [&>svg]:w-3.5 [&>svg]:h-3.5',
-        md: 'w-8 h-8 [&>svg]:w-4 [&>svg]:h-4',
+        md: 'w-9 h-9 [&>svg]:w-4.5 [&>svg]:h-4.5',
         lg: 'w-10 h-10 [&>svg]:w-5 [&>svg]:h-5',
     };
 
@@ -32,6 +32,7 @@ export default forwardRef<HTMLButtonElement, IconButtonProps>(function IconButto
     return (
         <button
             ref={ref}
+            type="button"
             aria-label={label}
             className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}
             disabled={disabled}

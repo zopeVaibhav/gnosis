@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { ApiResponse, ERROR_CODES, ErrorCode } from '@gnosis/types';
+import { ApiResponse, ERROR_CODES, ErrorCode, STREAM_MESSAGE } from '@gnosis/types';
 
 export class ResponseWriter {
     private static envelope<T>(
@@ -58,5 +58,9 @@ export class ResponseWriter {
         data: unknown = null,
     ) {
         return res.status(status).json(this.envelope(success, code, message, data));
+    }
+
+    static stream(res: Response, content: string, type: STREAM_MESSAGE) {
+        return res.write(`data: ${JSON.stringify({ type, content: content })}\n\n`);
     }
 }

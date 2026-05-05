@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { DM_Sans } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import './globals.css';
 import SessionSetter from '@/src/utility/SessionSetter';
 import AxiosBootstrap from '@/src/utility/AxiosBootstrap';
@@ -7,7 +7,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from './api/auth/[...nextauth]/options';
 import ToastProvider from '@/src/lib/ToastProvider';
 
-const dmSans = DM_Sans({
+const inter = Inter({
     variable: '--font-dm-sans',
     subsets: ['latin'],
 });
@@ -27,7 +27,7 @@ export default async function RootLayout({
 }>) {
     const session = await getServerSession(authOptions);
     return (
-        <html lang="en" className={`${dmSans.variable} h-full w-full antialiased`}>
+        <html lang="en" className={`${inter.variable} h-full w-full antialiased`}>
             <body className="min-h-full flex flex-col">
                 {children}
                 <SessionSetter session={session} />

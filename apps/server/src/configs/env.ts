@@ -10,6 +10,8 @@ const envSchema = z.object({
     JWT_ACCESS_SECRET: z.string().min(32),
     ACCESS_TOKEN_TTL_SEC: z.coerce.number().default(900), // 15 mins
     REFRESH_TOKEN_TTL_SEC: z.coerce.number().default(2592000), // 30 days
+    GEMINI_API_KEY: z.string(),
+    LLM_MODEL: z.string(),
 });
 
 const parsed = envSchema.safeParse(process.env);
