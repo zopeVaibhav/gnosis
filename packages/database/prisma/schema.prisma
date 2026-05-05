@@ -8,31 +8,32 @@ datasource db {
 }
 
 model User {
-    id Int @id @default(autoincrement())
-    email String @unique
-    name String
-    image String?
+    id        String   @id @default(cuid())
+    email     String   @unique
+    name      String
+    image     String?
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    accounts Account[]
+    accounts      Account[]
     refreshTokens RefreshToken[]
-    
+    chats         Chat[]
+
     @@index([email])
 }
 
 model Account {
-    id Int @id @default(autoincrement())
-    userId Int
-    provider String
+    id                String   @id @default(cuid())
+    userId            String
+    provider          String
     providerAccountId String
-    accessToken String?
-    refreshToken String?
-    expiresAt Int?
-    scope String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    
+    accessToken       String?
+    refreshToken      String?
+    expiresAt         Int?
+    scope             String?
+    createdAt         DateTime @default(now())
+    updatedAt         DateTime @updatedAt
+
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@unique([provider, providerAccountId])
@@ -40,14 +41,43 @@ model Account {
 }
 
 model RefreshToken {
-    id Int @id @default(autoincrement())
-    userId Int
-    tokenHash String @unique
+    id        String    @id @default(cuid())
+    userId    String
+    tokenHash String    @unique
     expiresAt DateTime
     revokedAt DateTime?
-    createdAt DateTime @default(now())
+    createdAt DateTime  @default(now())
 
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@index([userId])
+}
+
+model Chat {
+    id        String   @id @default(cuid())
+    userId    String
+    title     String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+    messages ChatMessage[]
+
+    @@index([userId])
+}
+
+model ChatMessage {
+    id        String   @id @default(cuid())
+    chatId    String
+    role      ROLE 
+    content   String
+    createdAt DateTime @default(now())
+    chats     Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+    @@index([chatId])
+}
+
+enum ROLE {
+    USER
+    ASSISTANT
 }

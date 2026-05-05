@@ -8,7 +8,7 @@ import { ResponseWriter } from '../utility/responseWriter';
 import { ACCESS_COOKIE, ERROR_CODES, REFRESH_COOKIE } from '@gnosis/types';
 
 interface AccessTokenPayload {
-    userId: number;
+    userId: string;
     iat: number;
     exp: number;
 }

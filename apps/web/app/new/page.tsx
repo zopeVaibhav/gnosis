@@ -90,9 +90,9 @@ export default function NewPage() {
                 </div>
 
                 {/* RECENT CHATS */}
-                <div className="p-2">
+                <div className="">
                     {sidebarOpen ? (
-                        <span className="text-sm font-semibold">Recents</span>
+                        <span className="p-2 text-sm font-semibold">Recents</span>
                     ) : (
                         <IconButton icon={MessageCircle} />
                     )}
