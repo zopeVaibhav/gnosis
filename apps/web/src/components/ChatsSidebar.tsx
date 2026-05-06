@@ -33,19 +33,6 @@ interface IsiderMenu {
     onClick: () => void;
 }
 
-const sidebarMenu: IsiderMenu[] = [
-    {
-        icon: SquarePen,
-        label: 'New Chat',
-        shortcut: '⌘N',
-        onClick: () => console.log('NEW CHAT'),
-    },
-    {
-        icon: Search,
-        label: 'Search Chats',
-        onClick: () => console.log('SEARCH CHATS'),
-    },
-];
 export default function ChatsSidebar() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [logoutOpen, setLogoutOpen] = useState(false);
@@ -55,7 +42,22 @@ export default function ChatsSidebar() {
     const router = useRouter();
     const { id: activeChatId } = useParams<{ id?: string }>();
 
+    const sidebarMenu: IsiderMenu[] = [
+        {
+            icon: SquarePen,
+            label: 'New Chat',
+            shortcut: '⌘N',
+            onClick: () => router.push('/chat'),
+        },
+        {
+            icon: Search,
+            label: 'Search Chats',
+            onClick: () => console.log('SEARCH CHATS'),
+        },
+    ];
+
     useKeyboardShortcut('b', () => setSidebarOpen((v) => !v), { meta: true });
+    useKeyboardShortcut('n', () => router.push('/chat'), { meta: true });
 
     useEffect(() => {
         axios

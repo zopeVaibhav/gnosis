@@ -122,7 +122,7 @@ export default function ChatInputComponent({ id = '' }) {
     useKeyboardShortcut('u', () => addSourceOptions[0]?.onClick(), { meta: true });
 
     return (
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center w-3xl">
             <div className="border border-border p-4 pb-2 rounded-xl w-full shadow-sm shadow-primary">
                 <textarea
                     value={message}
