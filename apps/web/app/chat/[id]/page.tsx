@@ -4,7 +4,7 @@ import { GET_MESSAGES } from '@/routes/api-routes';
 import ChatInputComponent from '@/src/components/ChatInputComponent';
 import axios from 'axios';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ROLE } from '@gnosis/types';
 
 interface Message {
@@ -15,7 +15,12 @@ interface Message {
 
 export default function ChatPage() {
     const [messages, setMessage] = useState<Message[]>([]);
+    const bottomRef = useRef<HTMLDivElement>(null);
     const { id } = useParams<{ id: string }>();
+
+    useEffect(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
 
     useEffect(() => {
         if (!id) return;
@@ -27,6 +32,7 @@ export default function ChatPage() {
             <div className="w-3xl flex-1 py-4">
                 {messages.map((m) => (
                     <div
+                        ref={bottomRef}
                         key={m.id}
                         className={`flex ${m.role === ROLE.USER ? 'justify-end' : 'justify-start'}`}
                     >

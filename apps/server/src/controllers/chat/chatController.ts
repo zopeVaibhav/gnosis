@@ -58,7 +58,6 @@ export const chatController = async (req: Request, res: Response) => {
                 version: 'v2',
             },
         );
-        console.log(events);
         for await (const ev of events) {
             if (ev.event === 'on_chat_model_stream') {
                 const node = ev.metadata?.langgraph_node;
