@@ -1,15 +1,16 @@
 'use client';
 import { Plus, SendIcon, Upload, LucideIcon } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useKeyboardShortcut } from '../hooks/useKeyboardShortcut';
 import IconButton from './shared/IconButton';
 import Popover from './shared/Popover';
 import { signIn } from 'next-auth/react';
-import { GoogleAuth } from '@gnosis/types';
+import { GoogleAuth, placeholderSuggestions } from '@gnosis/types';
 import { useUserSessionStore } from '../store/user/useUserSessionStore';
 import Image from 'next/image';
 import useSendMessage from '../hooks/useSendMessage';
 import { useChatStore } from '../store/chat/useChatStore';
+import useTypingAnimation from '../hooks/useTypingAnimation';
 
 interface AddSource {
     label: string;
@@ -66,6 +67,8 @@ export default function ChatInputComponent() {
     const [message, setMessage] = useState('');
     const { integrations } = useUserSessionStore();
     const { isStreaming } = useChatStore();
+
+    const placeholder = useTypingAnimation(placeholderSuggestions);
 
     const handleInput = () => {
         const el = ref.current;
@@ -128,7 +131,7 @@ export default function ChatInputComponent() {
                 rows={1}
                 onInput={handleInput}
                 className="border-none outline-none appearance-none p-0 m-0 mb-4 w-full bg-transparent resize-none overflow-y-hidden"
-                placeholder=" Ask anything..."
+                placeholder={' ' + placeholder}
             />
             <div className="flex items-center justify-between">
                 <div className="relative">
