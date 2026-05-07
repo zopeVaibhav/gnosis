@@ -20,11 +20,9 @@ import { useKeyboardShortcut } from '../hooks/useKeyboardShortcut';
 import Image from 'next/image';
 import { useUserSessionStore } from '../store/user/useUserSessionStore';
 import { GET_CHATS } from '@/routes/api-routes';
-
-interface ChatItem {
-    id: string;
-    title: string | null;
-}
+import { useChatListStore } from '../store/chat/useChatListStore';
+import { Chat } from '@gnosis/types';
+import { useChatStore } from '../store/chat/useChatStore';
 
 interface IsiderMenu {
     icon: LucideIcon;
@@ -36,7 +34,8 @@ interface IsiderMenu {
 export default function ChatsSidebar() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [logoutOpen, setLogoutOpen] = useState(false);
-    const [chats, setChats] = useState<ChatItem[]>([]);
+    const { chatList, setChatList } = useChatListStore();
+    const { reset } = useChatStore();
     const [loadingChats, setLoadingChats] = useState(true);
     const { session } = useUserSessionStore();
     const router = useRouter();
@@ -57,12 +56,12 @@ export default function ChatsSidebar() {
     ];
 
     useKeyboardShortcut('b', () => setSidebarOpen((v) => !v), { meta: true });
-    useKeyboardShortcut('n', () => router.push('/chat'), { meta: true });
+    useKeyboardShortcut('n', () => router.push('/'), { meta: true });
 
     useEffect(() => {
         axios
-            .get(GET_CHATS)
-            .then((res) => setChats(res.data ?? []))
+            .get<Chat[]>(GET_CHATS)
+            .then((res) => setChatList(res.data ?? []))
             .catch(() => {})
             .finally(() => setLoadingChats(false));
     }, []);
@@ -128,7 +127,7 @@ export default function ChatsSidebar() {
                                   />
                               </div>
                           ))
-                        : chats.map((chat) => (
+                        : chatList.map((chat) => (
                               <div
                                   key={chat.id}
                                   className={`p-2 text-sm truncate mb-0.5 cursor-pointer hover:bg-surface-faded rounded-lg ${chat.id === activeChatId ? 'bg-surface-faded' : ''}`}
@@ -144,7 +143,7 @@ export default function ChatsSidebar() {
 
             <div className="mt-auto flex gap-2 items-center p-2 bg-surface-faded rounded-lg">
                 <Image
-                    src={session?.user?.image || '/logo-filled.svg'}
+                    src={session?.user?.image || '/logo-filled.png'}
                     alt="Profile"
                     width={32}
                     height={32}

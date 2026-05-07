@@ -8,8 +8,8 @@ import { signIn } from 'next-auth/react';
 import { GoogleAuth } from '@gnosis/types';
 import { useUserSessionStore } from '../store/user/useUserSessionStore';
 import Image from 'next/image';
-import axios from 'axios';
-import { SEND_MESSAGE } from '@/routes/api-routes';
+import useSendMessage from '../hooks/useSendMessage';
+import { useChatStore } from '../store/chat/useChatStore';
 
 interface AddSource {
     label: string;
@@ -58,13 +58,14 @@ const addSourceOptions: AddSource[] = [
     },
 ];
 
-export default function ChatInputComponent({ id = '' }) {
+export default function ChatInputComponent() {
     const ref = useRef<HTMLTextAreaElement>(null);
     const plusRef = useRef<HTMLButtonElement>(null);
 
     const [addSourcesPopover, setAddSourcesPopover] = useState(false);
     const [message, setMessage] = useState('');
     const { integrations } = useUserSessionStore();
+    const { isStreaming } = useChatStore();
 
     const handleInput = () => {
         const el = ref.current;
@@ -76,20 +77,15 @@ export default function ChatInputComponent({ id = '' }) {
         el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
     };
 
+    const { send } = useSendMessage();
+
     const sendMessage = async (message: string) => {
-        const trimmed = message.trim();
-        if (!trimmed) return;
-        try {
-            const response = await axios.post(SEND_MESSAGE, { message: trimmed, id });
-            console.log(response.data);
-            setMessage('');
-            if (ref.current) {
-                ref.current.style.height = 'auto';
-                ref.current.style.overflowY = 'hidden';
-            }
-        } catch {
-            // error already toasted by the Axios interceptor
+        setMessage('');
+        if (ref.current) {
+            ref.current.style.height = 'auto';
+            ref.current.style.overflowY = 'hidden';
         }
+        await send(message);
     };
 
     const sources = useMemo(
@@ -102,7 +98,9 @@ export default function ChatInputComponent({ id = '' }) {
         [integrations],
     );
     // send message
-    useKeyboardShortcut('Enter', () => sendMessage(message));
+    useKeyboardShortcut('Enter', () => {
+        if (!isStreaming) return sendMessage(message);
+    });
     // meta + enter to next line
     useKeyboardShortcut(
         'Enter',
@@ -180,7 +178,8 @@ export default function ChatInputComponent({ id = '' }) {
                         </Popover>
                     </div>
                     <IconButton
-                        onClick={(e) => sendMessage(message)}
+                        disabled={isStreaming}
+                        onClick={() => sendMessage(message)}
                         icon={SendIcon}
                         label="Send Icon"
                     />

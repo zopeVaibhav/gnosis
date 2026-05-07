@@ -80,7 +80,7 @@ export default function NavbarComponent({ session }: { session: Session | null }
                             Deep Dive
                         </Link>
                         <Image
-                            src={session.user?.image || '/logo-filled.svg'}
+                            src={session.user?.image || '/logo-filled.png'}
                             alt="Profile"
                             width={32}
                             height={32}
