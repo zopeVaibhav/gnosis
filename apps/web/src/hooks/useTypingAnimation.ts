@@ -16,9 +16,11 @@ export default function useTypingAnimation(keywords: string[]): string {
         }
 
         if (typingState === 'deleting' && text === '') {
-            setTypingState('typing');
-            setCurrentIndex((i) => (i + 1) % keywords.length);
-            return;
+            const id = setTimeout(() => {
+                setTypingState('typing');
+                setCurrentIndex((i) => (i + 1) % keywords.length);
+            }, 200);
+            return () => clearTimeout(id);
         }
 
         const id = setTimeout(
@@ -32,7 +34,7 @@ export default function useTypingAnimation(keywords: string[]): string {
         );
 
         return () => clearTimeout(id);
-    }, [typingState, currentIndex, text]);
+    }, [typingState, currentIndex, text, keywords]);
 
     return text;
 }
