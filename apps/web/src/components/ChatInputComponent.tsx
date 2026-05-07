@@ -120,70 +120,68 @@ export default function ChatInputComponent() {
     useKeyboardShortcut('u', () => addSourceOptions[0]?.onClick(), { meta: true });
 
     return (
-        <div className="flex items-center justify-center w-3xl">
-            <div className="border border-border p-4 pb-2 rounded-xl w-full shadow-sm shadow-primary">
-                <textarea
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    ref={ref}
-                    rows={1}
-                    onInput={handleInput}
-                    className="border-none outline-none appearance-none p-0 m-0 mb-4 w-full bg-transparent resize-none overflow-y-hidden"
-                    placeholder=" Ask anything..."
-                />
-                <div className="flex items-center justify-between">
-                    <div className="relative">
-                        <IconButton
-                            icon={Plus}
-                            label="Plus"
-                            id="add-sources"
-                            ref={plusRef}
-                            onClick={() => setAddSourcesPopover((v) => !v)}
-                        />
-                        <Popover
-                            anchorRef={plusRef}
-                            open={addSourcesPopover}
-                            onClose={() => setAddSourcesPopover(false)}
-                            className="text-sm p-2"
-                        >
-                            {sources.map((item, key) => (
-                                <div
-                                    key={key}
-                                    className="group flex items-center gap-2 hover:bg-surface-faded p-2 rounded-lg cursor-pointer"
-                                    onClick={item.onClick}
-                                >
-                                    {item.icon && <item.icon size={16} />}
-                                    {item.img && (
-                                        <Image
-                                            src={item.img}
-                                            width={16}
-                                            height={16}
-                                            alt={item.key ?? ''}
-                                        />
-                                    )}
-                                    <span className="flex-1">{item.label}</span>
-                                    {item.shortcut && (
-                                        <span className="opacity-0 group-hover:opacity-100 text-xs text-muted transition-opacity">
-                                            {item.shortcut}
-                                        </span>
-                                    )}
-                                    {item.key &&
-                                        (item.connected ? (
-                                            <span className="bg-green-500 h-2 w-2 rounded-full animate-pulse"></span>
-                                        ) : (
-                                            <span className="bg-red-500 h-2 w-2 rounded-full animate-pulse"></span>
-                                        ))}
-                                </div>
-                            ))}
-                        </Popover>
-                    </div>
+        <div className="border border-border p-4 pb-2 rounded-xl w-full shadow-sm shadow-primary">
+            <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                ref={ref}
+                rows={1}
+                onInput={handleInput}
+                className="border-none outline-none appearance-none p-0 m-0 mb-4 w-full bg-transparent resize-none overflow-y-hidden"
+                placeholder=" Ask anything..."
+            />
+            <div className="flex items-center justify-between">
+                <div className="relative">
                     <IconButton
-                        disabled={isStreaming}
-                        onClick={() => sendMessage(message)}
-                        icon={SendIcon}
-                        label="Send Icon"
+                        icon={Plus}
+                        label="Plus"
+                        id="add-sources"
+                        ref={plusRef}
+                        onClick={() => setAddSourcesPopover((v) => !v)}
                     />
+                    <Popover
+                        anchorRef={plusRef}
+                        open={addSourcesPopover}
+                        onClose={() => setAddSourcesPopover(false)}
+                        className="text-sm p-2"
+                    >
+                        {sources.map((item, key) => (
+                            <div
+                                key={key}
+                                className="group flex items-center gap-2 hover:bg-surface-faded p-2 rounded-lg cursor-pointer"
+                                onClick={item.onClick}
+                            >
+                                {item.icon && <item.icon size={16} />}
+                                {item.img && (
+                                    <Image
+                                        src={item.img}
+                                        width={16}
+                                        height={16}
+                                        alt={item.key ?? ''}
+                                    />
+                                )}
+                                <span className="flex-1">{item.label}</span>
+                                {item.shortcut && (
+                                    <span className="opacity-0 group-hover:opacity-100 text-xs text-muted transition-opacity">
+                                        {item.shortcut}
+                                    </span>
+                                )}
+                                {item.key &&
+                                    (item.connected ? (
+                                        <span className="bg-green-500 h-2 w-2 rounded-full animate-pulse"></span>
+                                    ) : (
+                                        <span className="bg-red-500 h-2 w-2 rounded-full animate-pulse"></span>
+                                    ))}
+                            </div>
+                        ))}
+                    </Popover>
                 </div>
+                <IconButton
+                    disabled={isStreaming}
+                    onClick={() => sendMessage(message)}
+                    icon={SendIcon}
+                    label="Send Icon"
+                />
             </div>
         </div>
     );

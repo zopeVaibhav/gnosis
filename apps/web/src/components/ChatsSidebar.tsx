@@ -61,7 +61,7 @@ export default function ChatsSidebar() {
     useEffect(() => {
         axios
             .get<Chat[]>(GET_CHATS)
-            .then((res) => setChatList(res.data ?? []))
+            .then((res) => setChatList([...(res.data ?? []), ...(res.data ?? [])]))
             .catch(() => {})
             .finally(() => setLoadingChats(false));
     }, []);
@@ -98,7 +98,7 @@ export default function ChatsSidebar() {
                 {sidebarMenu.map((menu, idx) => (
                     <div
                         key={idx}
-                        className="group flex items-center justify-between cursor-pointer hover:bg-surface-faded transition-colors rounded-lg"
+                        className={`group flex items-center justify-between cursor-pointer hover:bg-surface-faded transition-colors rounded-full ${sidebarOpen ? 'rounded-lg' : ''}`}
                         onClick={() => menu.onClick()}
                     >
                         <div className="flex items-center gap-1">
@@ -108,7 +108,7 @@ export default function ChatsSidebar() {
                             )}
                         </div>
                         <div className="opacity-0 group-hover:opacity-100 text-xs text-muted transition-opacity pr-2">
-                            {menu.shortcut}
+                            {sidebarOpen && menu.shortcut}
                         </div>
                     </div>
                 ))}
@@ -116,27 +116,29 @@ export default function ChatsSidebar() {
 
             {/* RECENT CHATS */}
             {sidebarOpen ? (
-                <div className="flex flex-col mt-5 min-h-0 flex-1 overflow-y-auto">
-                    <div className="p-2 text-xs font-light text-muted">Recents</div>
-                    {loadingChats
-                        ? Array.from({ length: 6 }).map((_, idx) => (
-                              <div key={idx} className="p-2">
+                <>
+                    <div className="p-2 mt-5 text-xs font-light text-muted">Recents</div>
+                    <div className="overflow-y-auto -mr-2 pr-2">
+                        {loadingChats
+                            ? Array.from({ length: 6 }).map((_, idx) => (
+                                  <div key={idx} className="p-2">
+                                      <div
+                                          className="h-4 rounded bg-surface-faded animate-pulse"
+                                          style={{ width: `${60 + ((idx * 13) % 35)}%` }}
+                                      />
+                                  </div>
+                              ))
+                            : chatList.map((chat, index) => (
                                   <div
-                                      className="h-4 rounded bg-surface-faded animate-pulse"
-                                      style={{ width: `${60 + ((idx * 13) % 35)}%` }}
-                                  />
-                              </div>
-                          ))
-                        : chatList.map((chat) => (
-                              <div
-                                  key={chat.id}
-                                  className={`p-2 text-sm truncate mb-0.5 cursor-pointer hover:bg-surface-faded rounded-lg ${chat.id === activeChatId ? 'bg-surface-faded' : ''}`}
-                                  onClick={() => router.push(`/chat/${chat.id}`)}
-                              >
-                                  {chat.title || 'New chat'}
-                              </div>
-                          ))}
-                </div>
+                                      key={index}
+                                      className={`p-2 text-sm truncate mb-0.5 cursor-pointer hover:bg-surface-faded rounded-lg ${chat.id === activeChatId ? 'bg-surface-faded' : ''}`}
+                                      onClick={() => router.push(`/chat/${chat.id}`)}
+                                  >
+                                      {chat.title || 'New chat'}
+                                  </div>
+                              ))}
+                    </div>
+                </>
             ) : (
                 <IconButton icon={MessageCircle} />
             )}

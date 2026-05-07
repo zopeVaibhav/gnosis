@@ -10,7 +10,9 @@ export default function NewPage() {
                 <AppLogoComponent iconOnly={true} />
                 <p>What&apos;s on your mind today?</p>
             </div>
-            <ChatInputComponent />
+            <div className="w-2xl">
+                <ChatInputComponent />
+            </div>
         </div>
     );
 }
