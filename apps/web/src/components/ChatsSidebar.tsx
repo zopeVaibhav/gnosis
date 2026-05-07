@@ -120,7 +120,7 @@ export default function ChatsSidebar() {
                     <div className="p-2 mt-5 text-xs font-light text-muted">Recents</div>
                     <div className="overflow-y-auto -mr-2 pr-2">
                         {loadingChats
-                            ? Array.from({ length: 6 }).map((_, idx) => (
+                            ? Array.from({ length: 15 }).map((_, idx) => (
                                   <div key={idx} className="p-2">
                                       <div
                                           className="h-4 rounded bg-surface-faded animate-pulse"

@@ -129,9 +129,10 @@ export default function ChatInputComponent() {
                 onChange={(e) => setMessage(e.target.value)}
                 ref={ref}
                 rows={1}
+                autoFocus={true}
                 onInput={handleInput}
                 className="border-none outline-none appearance-none p-0 m-0 mb-4 w-full bg-transparent resize-none overflow-y-hidden"
-                placeholder={' ' + placeholder}
+                placeholder={useChatStore().activeChatId ? ' Ask Anything' : ' ' + placeholder}
             />
             <div className="flex items-center justify-between">
                 <div className="relative">

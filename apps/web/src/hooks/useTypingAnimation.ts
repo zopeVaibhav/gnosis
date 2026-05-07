@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 export default function useTypingAnimation(keywords: string[]): string {
     const [text, setText] = useState<string>(keywords[0] ?? '');
-    const [typingState, setTypingState] = useState<'typing' | 'deleting'>('deleting');
+    const [typingState, setTypingState] = useState<'typing' | 'deleting'>('typing');
     const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {
