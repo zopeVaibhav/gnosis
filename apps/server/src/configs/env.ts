@@ -13,6 +13,8 @@ const envSchema = z.object({
     REFRESH_TOKEN_TTL_SEC: z.coerce.number().default(2592000), // 30 days
     GEMINI_API_KEY: z.string(),
     LLM_MODEL: z.string(),
+    GOOGLE_CLIENT_ID: z.string(),
+    GOOGLE_CLIENT_SECRET: z.string(),
 });
 
 const parsed = envSchema.safeParse(process.env);

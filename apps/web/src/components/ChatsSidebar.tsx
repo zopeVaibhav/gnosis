@@ -22,7 +22,6 @@ import { useUserSessionStore } from '../store/user/useUserSessionStore';
 import { GET_CHATS } from '@/routes/api-routes';
 import { useChatListStore } from '../store/chat/useChatListStore';
 import { Chat } from '@gnosis/types';
-import { useChatStore } from '../store/chat/useChatStore';
 
 interface IsiderMenu {
     icon: LucideIcon;
@@ -35,7 +34,6 @@ export default function ChatsSidebar() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [logoutOpen, setLogoutOpen] = useState(false);
     const { chatList, setChatList } = useChatListStore();
-    const { reset } = useChatStore();
     const [loadingChats, setLoadingChats] = useState(true);
     const { session } = useUserSessionStore();
     const router = useRouter();

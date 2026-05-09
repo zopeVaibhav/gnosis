@@ -56,6 +56,9 @@ export const chatController = async (req: Request, res: Response) => {
             },
             {
                 version: 'v2',
+                configurable: {
+                    userId,
+                },
             },
         );
         for await (const ev of events) {

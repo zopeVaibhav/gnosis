@@ -4,12 +4,13 @@ import ChatInputComponent from '@/src/components/ChatInputComponent';
 import { useEffect, useRef } from 'react';
 import { Message, ROLE } from '@gnosis/types';
 import { useChatStore } from '@/src/store/chat/useChatStore';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { GET_MESSAGES } from '@/routes/api-routes';
 import axios from 'axios';
 
 export default function ChatPage() {
     const { messages, setActiveChatId, reset, setMessages } = useChatStore();
+    const router = useRouter();
     const bottomRef = useRef<HTMLDivElement>(null);
     const { id } = useParams<{ id: string }>();
 
@@ -17,9 +18,16 @@ export default function ChatPage() {
         if (!id) return;
         setActiveChatId(id);
         if (useChatStore.getState().isStreaming) return;
-        axios.get<Message[]>(GET_MESSAGES(id)).then((res) => {
-            setMessages(res.data ?? []);
-        });
+        axios
+            .get<Message[]>(GET_MESSAGES(id))
+            .then((res) => {
+                setMessages(res.data ?? []);
+            })
+            .catch((res) => {
+                if (res.status === 404) {
+                    return router.push('/');
+                }
+            });
         return () => reset();
     }, [id]);
 

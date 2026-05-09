@@ -105,7 +105,7 @@ function handleFrame(
         router: ReturnType<typeof useRouter>;
     },
 ) {
-    const { appendChatList, updateChatTitle } = useChatListStore.getInitialState();
+    const { appendChatList, updateChatTitle } = useChatListStore.getState();
     switch (frame.type) {
         case STREAM_MESSAGE.CHAT_CREATED:
             ctx.setActiveChatId(frame.content);

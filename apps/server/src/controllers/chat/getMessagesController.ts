@@ -8,6 +8,12 @@ export const getChatMessagesController = async (req: Request, res: Response) => 
         const { id } = req.params;
         if (typeof id !== 'string') return ResponseWriter.invalid_data(res, 'Invalid chat id');
 
+        const chat = await prisma.chat.findFirst({
+            where: { id, userId: req.user.id },
+            select: { id: true },
+        });
+        if (!chat) return ResponseWriter.not_found(res, 'Chat not found');
+
         const messages = await prisma.chatMessage.findMany({
             where: {
                 chatId: id,
