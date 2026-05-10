@@ -36,3 +36,8 @@ export const googleClient = async (userId: string): Promise<OAuth2Client> => {
 
     return oauth2Client;
 };
+
+export const getGmailClient = async (userId: string) => {
+    const auth = await googleClient(userId);
+    return google.gmail({ version: 'v1', auth });
+};
