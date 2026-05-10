@@ -59,7 +59,7 @@ export default function ChatsSidebar() {
     useEffect(() => {
         axios
             .get<Chat[]>(GET_CHATS)
-            .then((res) => setChatList([...(res.data ?? []), ...(res.data ?? [])]))
+            .then((res) => setChatList(res.data ?? []))
             .catch(() => {})
             .finally(() => setLoadingChats(false));
     }, []);
