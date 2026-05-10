@@ -74,13 +74,13 @@ export default function NavbarComponent({ session }: { session: Session | null }
                 {session?.user ? (
                     <div className="flex gap-2">
                         <Link
-                            href="/new"
+                            href="/chat"
                             className="px-4 py-1.5 rounded-full text-sm font-medium bg-primary cursor-pointer hover:bg-primary-hover transition-colors"
                         >
                             Deep Dive
                         </Link>
                         <Image
-                            src={session.user?.image || '/logo-filled.svg'}
+                            src={session.user?.image || '/logo-filled.png'}
                             alt="Profile"
                             width={32}
                             height={32}

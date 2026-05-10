@@ -3,8 +3,6 @@ import { signInSchema } from '../../schemas/signInSchema';
 import { prisma } from '@gnosis/database';
 import jwt from 'jsonwebtoken';
 import { env } from '../../configs/env';
-import crypto from 'crypto';
-import { generateSha256 } from '../../utility/generateSha256';
 import { ResponseWriter } from '../../utility/responseWriter';
 
 export const signInController = async (req: Request, res: Response) => {
@@ -56,13 +54,11 @@ export const signInController = async (req: Request, res: Response) => {
             expiresIn: env.ACCESS_TOKEN_TTL_SEC,
         });
 
-        const rawRefresh = crypto.randomBytes(64).toString('hex');
-        const tokenHash = generateSha256(rawRefresh);
-        const expiresAt = new Date(Date.now() + env.REFRESH_TOKEN_TTL_SEC * 1000);
-
-        await prisma.refreshToken.create({
-            data: { userId: user.id, tokenHash, expiresAt },
+        const refreshToken = jwt.sign({ userId: user.id }, env.JWT_REFRESH_SECRET, {
+            expiresIn: env.REFRESH_TOKEN_TTL_SEC,
         });
+
+        const refreshExpiresAt = new Date(Date.now() + env.REFRESH_TOKEN_TTL_SEC * 1000);
 
         return ResponseWriter.success(
             res,
@@ -74,9 +70,9 @@ export const signInController = async (req: Request, res: Response) => {
                     image: user.image,
                 },
                 accessToken,
-                refreshToken: rawRefresh,
+                refreshToken,
                 accessTokenExpiresInSec: env.ACCESS_TOKEN_TTL_SEC,
-                refreshTokenExpiresAt: expiresAt.toISOString(),
+                refreshTokenExpiresAt: refreshExpiresAt.toISOString(),
             },
             'Authenticated',
         );

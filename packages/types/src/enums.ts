@@ -1,5 +1,11 @@
 export enum STREAM_MESSAGE {
     CHAT_MESSAGE = 'CHAT_MESSAGE',
     CHAT_CREATED = 'CHAT_CREATED',
+    CHAT_TITLE = 'CHAT_TITLE',
     COMPLETED = 'COMPLETED',
+}
+
+export enum ROLE {
+    USER = 'USER',
+    ASSISTANT = 'ASSISTANT',
 }

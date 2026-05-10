@@ -1,15 +1,16 @@
 'use client';
 import { Plus, SendIcon, Upload, LucideIcon } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useKeyboardShortcut } from '../hooks/useKeyboardShortcut';
 import IconButton from './shared/IconButton';
 import Popover from './shared/Popover';
 import { signIn } from 'next-auth/react';
-import { GoogleAuth } from '@gnosis/types';
+import { GoogleAuth, placeholderSuggestions } from '@gnosis/types';
 import { useUserSessionStore } from '../store/user/useUserSessionStore';
 import Image from 'next/image';
-import axios from 'axios';
-import { SEND_MESSAGE } from '@/routes/api-routes';
+import useSendMessage from '../hooks/useSendMessage';
+import { useChatStore } from '../store/chat/useChatStore';
+import useTypingAnimation from '../hooks/useTypingAnimation';
 
 interface AddSource {
     label: string;
@@ -65,6 +66,9 @@ export default function ChatInputComponent() {
     const [addSourcesPopover, setAddSourcesPopover] = useState(false);
     const [message, setMessage] = useState('');
     const { integrations } = useUserSessionStore();
+    const { isStreaming } = useChatStore();
+
+    const placeholder = useTypingAnimation(placeholderSuggestions);
 
     const handleInput = () => {
         const el = ref.current;
@@ -76,14 +80,15 @@ export default function ChatInputComponent() {
         el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
     };
 
+    const { send } = useSendMessage();
+
     const sendMessage = async (message: string) => {
-        try {
-            const response = await axios.post(SEND_MESSAGE, { message: message.trim() });
-            console.log(response.data);
-            setMessage('');
-        } catch {
-            // error already toasted by the Axios interceptor
+        setMessage('');
+        if (ref.current) {
+            ref.current.style.height = 'auto';
+            ref.current.style.overflowY = 'hidden';
         }
+        await send(message);
     };
 
     const sources = useMemo(
@@ -96,7 +101,9 @@ export default function ChatInputComponent() {
         [integrations],
     );
     // send message
-    useKeyboardShortcut('Enter', () => sendMessage(message));
+    useKeyboardShortcut('Enter', () => {
+        if (!isStreaming) return sendMessage(message);
+    });
     // meta + enter to next line
     useKeyboardShortcut(
         'Enter',
@@ -116,68 +123,69 @@ export default function ChatInputComponent() {
     useKeyboardShortcut('u', () => addSourceOptions[0]?.onClick(), { meta: true });
 
     return (
-        <div className="flex items-center justify-center flex-1">
-            <div className="border border-border p-4 pb-2 rounded-xl w-2xl shadow-sm shadow-primary">
-                <textarea
-                    onChange={(e) => setMessage(e.target.value)}
-                    ref={ref}
-                    rows={1}
-                    onInput={handleInput}
-                    className="border-none outline-none appearance-none p-0 m-0 mb-4 w-full bg-transparent resize-none overflow-y-hidden"
-                    placeholder=" Ask anything..."
-                />
-                <div className="flex items-center justify-between">
-                    <div className="relative">
-                        <IconButton
-                            icon={Plus}
-                            label="Plus"
-                            id="add-sources"
-                            ref={plusRef}
-                            onClick={() => setAddSourcesPopover((v) => !v)}
-                        />
-                        <Popover
-                            anchorRef={plusRef}
-                            open={addSourcesPopover}
-                            onClose={() => setAddSourcesPopover(false)}
-                            className="text-sm p-2"
-                        >
-                            {sources.map((item, key) => (
-                                <div
-                                    key={key}
-                                    className="group flex items-center gap-2 hover:bg-surface-faded p-2 rounded-lg cursor-pointer"
-                                    onClick={item.onClick}
-                                >
-                                    {item.icon && <item.icon size={16} />}
-                                    {item.img && (
-                                        <Image
-                                            src={item.img}
-                                            width={16}
-                                            height={16}
-                                            alt={item.key ?? ''}
-                                        />
-                                    )}
-                                    <span className="flex-1">{item.label}</span>
-                                    {item.shortcut && (
-                                        <span className="opacity-0 group-hover:opacity-100 text-xs text-muted transition-opacity">
-                                            {item.shortcut}
-                                        </span>
-                                    )}
-                                    {item.key &&
-                                        (item.connected ? (
-                                            <span className="bg-green-500 h-2 w-2 rounded-full animate-pulse"></span>
-                                        ) : (
-                                            <span className="bg-red-500 h-2 w-2 rounded-full animate-pulse"></span>
-                                        ))}
-                                </div>
-                            ))}
-                        </Popover>
-                    </div>
+        <div className="border border-border p-4 pb-2 rounded-xl w-full shadow-sm shadow-primary">
+            <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                ref={ref}
+                rows={1}
+                autoFocus={true}
+                onInput={handleInput}
+                className="border-none outline-none appearance-none p-0 m-0 mb-4 w-full bg-transparent resize-none overflow-y-hidden"
+                placeholder={useChatStore().activeChatId ? ' Ask Anything' : ' ' + placeholder}
+            />
+            <div className="flex items-center justify-between">
+                <div className="relative">
                     <IconButton
-                        onClick={(e) => sendMessage(message)}
-                        icon={SendIcon}
-                        label="Send Icon"
+                        icon={Plus}
+                        label="Plus"
+                        id="add-sources"
+                        ref={plusRef}
+                        onClick={() => setAddSourcesPopover((v) => !v)}
                     />
+                    <Popover
+                        anchorRef={plusRef}
+                        open={addSourcesPopover}
+                        onClose={() => setAddSourcesPopover(false)}
+                        className="text-sm p-2"
+                    >
+                        {sources.map((item, key) => (
+                            <div
+                                key={key}
+                                className="group flex items-center gap-2 hover:bg-surface-faded p-2 rounded-lg cursor-pointer"
+                                onClick={item.onClick}
+                            >
+                                {item.icon && <item.icon size={16} />}
+                                {item.img && (
+                                    <Image
+                                        src={item.img}
+                                        width={16}
+                                        height={16}
+                                        alt={item.key ?? ''}
+                                    />
+                                )}
+                                <span className="flex-1">{item.label}</span>
+                                {item.shortcut && (
+                                    <span className="opacity-0 group-hover:opacity-100 text-xs text-muted transition-opacity">
+                                        {item.shortcut}
+                                    </span>
+                                )}
+                                {item.key &&
+                                    (item.connected ? (
+                                        <span className="bg-green-500 h-2 w-2 rounded-full animate-pulse"></span>
+                                    ) : (
+                                        <span className="bg-red-500 h-2 w-2 rounded-full animate-pulse"></span>
+                                    ))}
+                            </div>
+                        ))}
+                    </Popover>
                 </div>
+                <IconButton
+                    disabled={isStreaming}
+                    onClick={() => sendMessage(message)}
+                    icon={SendIcon}
+                    label="Send Icon"
+                />
             </div>
         </div>
     );
