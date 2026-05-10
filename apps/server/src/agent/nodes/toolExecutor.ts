@@ -32,14 +32,14 @@ export const toolExecutorNode = async (
     const results = settled.map((r, i) => {
         if (r.status == 'fulfilled') return r.value;
 
-        const call = calls[i];
+        const call = calls[i]!;
         return new ToolMessage({
             content: JSON.stringify({
                 error: 'tool_threw',
                 message: r.reason instanceof Error ? r.reason.message : String(r.reason),
             }),
-            tool_call_id: call?.id!,
-            name: call?.name,
+            tool_call_id: call.id!,
+            name: call.name,
         });
     });
 
