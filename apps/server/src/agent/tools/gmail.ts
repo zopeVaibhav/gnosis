@@ -35,6 +35,7 @@ const headerValue = (
 export const buildGmailTools = (userId: string) => {
     const gmailSearch = tool(
         async ({ query, maxResults }) => {
+            // console.log('[tool] gmail_search', { query, maxResults });
             try {
                 const gmail = await getGmailClient(userId);
                 const list = await gmail.users.messages.list({
@@ -97,6 +98,7 @@ export const buildGmailTools = (userId: string) => {
 
     const gmailGetMessage = tool(
         async ({ id }) => {
+            // console.log('[tool] gmail_get_message', { id });
             try {
                 const gmail = await getGmailClient(userId);
                 const { data } = await gmail.users.messages.get({
@@ -129,6 +131,18 @@ export const buildGmailTools = (userId: string) => {
                         message: 'User has not connected gmail. Ask them to link',
                     });
                 }
+                const apiMessage =
+                    error && typeof error === 'object' && 'message' in error
+                        ? String((error as { message: unknown }).message)
+                        : '';
+                if (apiMessage.toLowerCase().includes('invalid id')) {
+                    console.warn('[tool] gmail_get_message invalid_id', { apiMessage });
+                    return JSON.stringify({
+                        error: 'invalid_id',
+                        message:
+                            'Gmail rejected the id as invalid. Call gmail_search first and pass the exact hex id from the results.',
+                    });
+                }
                 console.error('gmail.get_message', error);
                 return JSON.stringify({ error: 'tool_failed', message: 'Gmail get tool failed' });
             }
@@ -137,7 +151,15 @@ export const buildGmailTools = (userId: string) => {
             name: 'gmail_get_message',
             description: GMAIL_GET_MESSAGE_DESC,
             schema: z.object({
-                id: z.string().describe('The Gmail message id (from gmail_search results)'),
+                id: z
+                    .string()
+                    .regex(
+                        /^[0-9a-f]+$/i,
+                        'Gmail ids are hex strings — copy the id verbatim from gmail_search results',
+                    )
+                    .describe(
+                        'The Gmail message id from gmail_search results (hex string, e.g. "196e8f2a3b4d5e6f")',
+                    ),
             }),
         },
     );
