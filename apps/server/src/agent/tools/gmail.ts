@@ -1,20 +1,43 @@
 import { tool } from '@langchain/core/tools';
-import { GMAIL_SEARCH_DESC } from '../const/toolsDescription';
+import { GMAIL_GET_MESSAGE_DESC, GMAIL_SEARCH_DESC } from '../const/toolsDescription';
 import z from 'zod';
 import { NotConnectedError } from '../client/error';
-import { googleClient } from '../client/googleClient';
-import { google } from 'googleapis';
+import { getGmailClient } from '../client/googleClient';
+import { gmail_v1 } from 'googleapis';
+
+const collectPart = (
+    part: gmail_v1.Schema$MessagePart | undefined | null,
+    mime: string,
+    out: string[],
+) => {
+    if (!part) return;
+    if (part.mimeType === mime && part.body?.data) {
+        out.push(Buffer.from(part.body.data, 'base64url').toString('utf-8'));
+    }
+    part.parts?.forEach((p) => collectPart(p, mime, out));
+};
+
+const extractBody = (payload: gmail_v1.Schema$MessagePart | undefined | null): string => {
+    if (!payload) return '';
+    const plain: string[] = [];
+    collectPart(payload, 'text/plain', plain);
+    if (plain.length) return plain.join('\n');
+    const html: string[] = [];
+    collectPart(payload, 'text/html', html);
+    return html.join('\n');
+};
+
+const headerValue = (
+    headers: gmail_v1.Schema$MessagePartHeader[] | undefined | null,
+    name: string,
+): string => headers?.find((x) => x.name?.toLowerCase() === name.toLocaleLowerCase())?.value ?? '';
 
 export const buildGmailTools = (userId: string) => {
     const gmailSearch = tool(
         async ({ query, maxResults }) => {
+            // console.log('[tool] gmail_search', { query, maxResults });
             try {
-                const auth = await googleClient(userId);
-                const gmail = google.gmail({
-                    version: 'v1',
-                    auth,
-                });
-
+                const gmail = await getGmailClient(userId);
                 const list = await gmail.users.messages.list({
                     userId: 'me',
                     q: query,
@@ -33,14 +56,13 @@ export const buildGmailTools = (userId: string) => {
                             metadataHeaders: ['From', 'Subject', 'Date'],
                         });
                         const headers = msg.data.payload?.headers ?? [];
-                        const h = (name: string) =>
-                            headers.find((x) => x.name === name)?.value ?? '';
+                        const h = (name: string) => headerValue(headers, name);
                         return {
                             id: msg.data.id,
                             from: h('From'),
                             subject: h('Subject'),
                             date: h('Date'),
-                            snipped: msg.data.snippet ?? '',
+                            snippet: msg.data.snippet ?? '',
                         };
                     }),
                 );
@@ -61,7 +83,7 @@ export const buildGmailTools = (userId: string) => {
             name: 'gmail_search',
             description: GMAIL_SEARCH_DESC,
             schema: z.object({
-                query: z.string().describe('Gamil Search e.g. "from: alice@x.com subject: invoice'),
+                query: z.string().describe('Gmail Search e.g. "from: alice@x.com subject:invoice"'),
 
                 maxResults: z
                     .number()
@@ -69,9 +91,78 @@ export const buildGmailTools = (userId: string) => {
                     .min(1)
                     .max(20)
                     .default(10)
-                    .describe('How many messages to reutrn (1-20)'),
+                    .describe('How many messages to return (1-20)'),
             }),
         },
     );
-    return [gmailSearch];
+
+    const gmailGetMessage = tool(
+        async ({ id }) => {
+            // console.log('[tool] gmail_get_message', { id });
+            try {
+                const gmail = await getGmailClient(userId);
+                const { data } = await gmail.users.messages.get({
+                    userId: 'me',
+                    id,
+                    format: 'full',
+                });
+
+                const headers = data.payload?.headers ?? [];
+                const h = (name: string) => headerValue(headers, name);
+                const body = extractBody(data.payload);
+                const MAX = 8000;
+                const truncated = body.length > MAX;
+
+                return JSON.stringify({
+                    id: data.id,
+                    from: h('From'),
+                    date: h('Date'),
+                    to: h('To'),
+                    cc: h('Cc'),
+                    subject: h('Subject'),
+                    body: truncated ? body.slice(0, MAX) : body,
+                    truncated,
+                });
+            } catch (error) {
+                if (error instanceof NotConnectedError) {
+                    return JSON.stringify({
+                        error: 'not_connected',
+                        provider: 'google',
+                        message: 'User has not connected gmail. Ask them to link',
+                    });
+                }
+                const apiMessage =
+                    error && typeof error === 'object' && 'message' in error
+                        ? String((error as { message: unknown }).message)
+                        : '';
+                if (apiMessage.toLowerCase().includes('invalid id')) {
+                    console.warn('[tool] gmail_get_message invalid_id', { apiMessage });
+                    return JSON.stringify({
+                        error: 'invalid_id',
+                        message:
+                            'Gmail rejected the id as invalid. Call gmail_search first and pass the exact hex id from the results.',
+                    });
+                }
+                console.error('gmail.get_message', error);
+                return JSON.stringify({ error: 'tool_failed', message: 'Gmail get tool failed' });
+            }
+        },
+        {
+            name: 'gmail_get_message',
+            description: GMAIL_GET_MESSAGE_DESC,
+            schema: z.object({
+                id: z
+                    .string()
+                    .regex(
+                        /^[0-9a-f]+$/i,
+                        'Gmail ids are hex strings — copy the id verbatim from gmail_search results',
+                    )
+                    .describe(
+                        'The Gmail message id from gmail_search results (hex string, e.g. "196e8f2a3b4d5e6f")',
+                    ),
+            }),
+        },
+    );
+
+    return [gmailSearch, gmailGetMessage];
 };
