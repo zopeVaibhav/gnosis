@@ -135,7 +135,6 @@ export default function ChatInputComponent() {
                 placeholder={useChatStore().activeChatId ? ' Ask Anything' : ' ' + placeholder}
             />
             <div className="flex items-center justify-between">
-                <div className="bg-white tex-red-400"></div>
                 <div className="relative">
                     <IconButton
                         icon={Plus}
