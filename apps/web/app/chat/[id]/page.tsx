@@ -9,7 +9,7 @@ import { GET_MESSAGES } from '@/routes/api-routes';
 import axios from 'axios';
 
 export default function ChatPage() {
-    const { messages, activeChatId, setActiveChatId, reset, setMessages } = useChatStore();
+    const { messages, setActiveChatId, reset, setMessages } = useChatStore();
     const router = useRouter();
     const bottomRef = useRef<HTMLDivElement>(null);
     const { id } = useParams<{ id: string }>();
@@ -17,7 +17,6 @@ export default function ChatPage() {
     useEffect(() => {
         if (!id) return;
         setActiveChatId(id);
-        console.log('calling MOUNT USEEFFECT -------> active chatId on page start: ', activeChatId);
         if (useChatStore.getState().isStreaming) return;
         axios
             .get<Message[]>(GET_MESSAGES(id))
@@ -29,11 +28,7 @@ export default function ChatPage() {
                     return router.push('/');
                 }
             });
-        return () => {
-            console.log('UNMOUNT calling reset with chatId: ', activeChatId);
-            reset();
-            console.log('UNMOUNT after calling reset aactive chatId: ', activeChatId);
-        };
+        return () => reset();
     }, [id]);
 
     useEffect(() => {
