@@ -2,8 +2,6 @@
 
 TypeScript monorepo (pnpm workspaces + Turborepo) with a Next.js web app and an Express API server, backed by Postgres + Prisma.
 
-## Layout
-
 ```
 apps/
   web/       # Next.js 16 (@gnosis/web)
