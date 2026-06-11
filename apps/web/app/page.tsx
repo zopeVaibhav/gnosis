@@ -1,4 +1,3 @@
-import ChatInputComponent from '@/src/components/ChatInputComponent';
 import NavbarComponent from '@/src/components/NavbarComponent';
 import { getServerSession } from 'next-auth';
 import { authOptions } from './api/auth/[...nextauth]/options';
