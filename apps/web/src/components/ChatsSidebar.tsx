@@ -91,7 +91,6 @@ export default function ChatsSidebar() {
                 />
             </div>
 
-            {/* MENU SECTION */}
             <div className="flex flex-col mt-4">
                 {sidebarMenu.map((menu, idx) => (
                     <div
