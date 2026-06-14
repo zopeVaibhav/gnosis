@@ -111,7 +111,6 @@ export default function ChatsSidebar() {
                 ))}
             </div>
 
-            {/* RECENT CHATS */}
             {sidebarOpen ? (
                 <>
                     <div className="p-2 mt-5 text-xs font-light text-muted">Recents</div>
