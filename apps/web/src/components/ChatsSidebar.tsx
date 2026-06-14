@@ -91,7 +91,6 @@ export default function ChatsSidebar() {
                 />
             </div>
 
-            {/* MENU SECTION */}
             <div className="flex flex-col mt-4">
                 {sidebarMenu.map((menu, idx) => (
                     <div
@@ -112,7 +111,6 @@ export default function ChatsSidebar() {
                 ))}
             </div>
 
-            {/* RECENT CHATS */}
             {sidebarOpen ? (
                 <>
                     <div className="p-2 mt-5 text-xs font-light text-muted">Recents</div>
