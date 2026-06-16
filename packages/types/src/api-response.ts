@@ -1,3 +1,4 @@
+// custom response
 export interface ApiResponseSuccess<T> {
     success: true;
     code: string;
