@@ -6,6 +6,6 @@ build
 coverage
 generated
 *.log
-pnpm-lock.yaml
+bun.lock
 .env
 .env.*

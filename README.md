@@ -1,6 +1,6 @@
 # Gnosis
 
-TypeScript monorepo (pnpm workspaces + Turborepo) with a Next.js web app and an Express API server, backed by Postgres + Prisma.
+TypeScript monorepo (Bun workspaces + Turborepo) with a Next.js web app and an Express API server, backed by Postgres + Prisma.
 
 ```
 apps/
@@ -19,12 +19,12 @@ docker-compose.prod.yml    # Prod server container (DB on Neon)
 ## Setup
 
 ```sh
-pnpm install
+bun install
 cp .env.example .env
 docker compose up -d        # local Postgres
-pnpm db:generate
-pnpm db:migrate
-pnpm dev
+bun run db:generate
+bun run db:migrate
+bun run dev
 ```
 
 `.env` (root) keys:
@@ -38,14 +38,14 @@ All apps read this single root `.env`.
 
 ## Commands
 
-| Command                                         | What it does            |
-| ----------------------------------------------- | ----------------------- |
-| `pnpm dev`                                      | Run web + server in dev |
-| `pnpm build`                                    | Build everything        |
-| `pnpm lint` / `pnpm check-types`                | Lint / typecheck        |
-| `pnpm db:generate` / `db:migrate` / `db:studio` | Prisma                  |
+| Command                                            | What it does            |
+| -------------------------------------------------- | ----------------------- |
+| `bun run dev`                                      | Run web + server in dev |
+| `bun run build`                                    | Build everything        |
+| `bun run lint` / `bun run check-types`             | Lint / typecheck        |
+| `bun run db:generate` / `db:migrate` / `db:studio` | Prisma                  |
 
-Filter: `pnpm --filter @gnosis/web dev`, `pnpm --filter @gnosis/server dev`.
+Filter: `bun run --filter @gnosis/web dev`, `bun run --filter @gnosis/server dev`.
 
 - Web: http://localhost:3000
 - Server: http://localhost:8080
