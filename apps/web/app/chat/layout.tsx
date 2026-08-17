@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import ChatsSidebar from '@/src/components/ChatsSidebar';
+import ChatsSidebar from "@/components/ChatsSidebar";
 
 export default function NewLayout({ children }: { children: React.ReactNode }) {
     return (

@@ -1,8 +1,8 @@
-import { z } from 'zod';
-import chalk from 'chalk';
+import { z } from "zod";
+import chalk from "chalk";
 
 const envSchema = z.object({
-    NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+    NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
     SERVER_PORT: z.coerce.number().default(8080),
     WEB_ORIGIN: z.url(),
     DATABASE_URL: z.url(),
@@ -20,12 +20,12 @@ const envSchema = z.object({
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
-    console.error(chalk.red.bold('\n✖ Invalid environment configuration:\n'));
+    console.error(chalk.red.bold("\n✖ Invalid environment configuration:\n"));
     for (const issue of parsed.error.issues) {
-        const field = issue.path.join('.') || '(root)';
+        const field = issue.path.join(".") || "(root)";
         console.error(`  ${chalk.yellow(field)}: ${chalk.red(issue.message)}`);
     }
-    console.error(chalk.dim('\nCheck your .env file (see .env.example for required vars).\n'));
+    console.error(chalk.dim("\nCheck your .env file (see .env.example for required vars).\n"));
     process.exit(1);
 }
 

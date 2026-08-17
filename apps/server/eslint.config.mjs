@@ -1,8 +1,8 @@
-import { config } from '@gnosis/eslint-config/base';
+import { config } from "@gnosis/eslint-config/base";
 
 export default [
     ...config,
     {
-        ignores: ['dist/**', 'node_modules/**'],
+        ignores: ["dist/**", "node_modules/**"],
     },
 ];

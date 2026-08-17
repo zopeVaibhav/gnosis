@@ -1,4 +1,4 @@
-import { ROLE } from './enums';
+import { ROLE } from "./enums";
 
 export interface Chat {
     id: string;

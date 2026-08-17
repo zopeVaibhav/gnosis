@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import ChatInputComponent from '@/src/components/ChatInputComponent';
-import { useEffect, useRef } from 'react';
-import { Message, ROLE } from '@gnosis/types';
-import { useChatStore } from '@/src/store/chat/useChatStore';
-import { useParams, useRouter } from 'next/navigation';
-import { GET_MESSAGES } from '@/routes/api-routes';
-import axios from 'axios';
+import ChatInput from "@/components/ChatInput";
+import { useEffect, useRef } from "react";
+import { Message, ROLE } from "@gnosis/types";
+import { useChatStore } from "@/store/chat/useChatStore";
+import { useParams, useRouter } from "next/navigation";
+import { GET_MESSAGES } from "@/routes/api_routes";
+import axios from "axios";
 
 export default function ChatPage() {
     const { messages, setActiveChatId, reset, setMessages } = useChatStore();
@@ -25,14 +25,14 @@ export default function ChatPage() {
             })
             .catch((res) => {
                 if (res.status === 404) {
-                    return router.push('/');
+                    return router.push("/");
                 }
             });
         return () => reset();
     }, [id]);
 
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
     return (
@@ -42,10 +42,10 @@ export default function ChatPage() {
                     <div
                         ref={bottomRef}
                         key={m.id}
-                        className={`flex ${m.role === ROLE.USER ? 'justify-end' : 'justify-start'}`}
+                        className={`flex ${m.role === ROLE.USER ? "justify-end" : "justify-start"}`}
                     >
                         <div
-                            className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${m.role === ROLE.USER ? 'bg-surface-faded rounded-br-none' : 'bg-transparent'}`}
+                            className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${m.role === ROLE.USER ? "bg-surface-faded rounded-br-none" : "bg-transparent"}`}
                         >
                             {m.content || (m.pending ? <span>Loading</span> : null)}
                         </div>
@@ -53,7 +53,7 @@ export default function ChatPage() {
                 ))}
             </div>
             <div className="pb-4 sticky bottom-0 z-50 bg-background w-3xl">
-                <ChatInputComponent />
+                <ChatInput />
             </div>
         </>
     );

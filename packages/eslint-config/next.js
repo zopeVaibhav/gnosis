@@ -14,46 +14,46 @@ import { config as baseConfig } from "./base.js";
  * @type {import("eslint").Linter.Config[]}
  * */
 export const nextJsConfig = [
-  ...baseConfig,
-  js.configs.recommended,
-  eslintConfigPrettier,
-  ...tseslint.configs.recommended,
-  globalIgnores([
-    // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-  ]),
-  {
-    ...pluginReact.configs.flat.recommended,
-    languageOptions: {
-      ...pluginReact.configs.flat.recommended.languageOptions,
-      globals: {
-        ...globals.serviceworker,
-      },
+    ...baseConfig,
+    js.configs.recommended,
+    eslintConfigPrettier,
+    ...tseslint.configs.recommended,
+    globalIgnores([
+        // Default ignores of eslint-config-next:
+        ".next/**",
+        "out/**",
+        "build/**",
+        "next-env.d.ts",
+    ]),
+    {
+        ...pluginReact.configs.flat.recommended,
+        languageOptions: {
+            ...pluginReact.configs.flat.recommended.languageOptions,
+            globals: {
+                ...globals.serviceworker,
+            },
+        },
     },
-  },
-  {
-    plugins: {
-      "@next/next": pluginNext,
+    {
+        plugins: {
+            "@next/next": pluginNext,
+        },
+        rules: {
+            ...pluginNext.configs.recommended.rules,
+            ...pluginNext.configs["core-web-vitals"].rules,
+        },
     },
-    rules: {
-      ...pluginNext.configs.recommended.rules,
-      ...pluginNext.configs["core-web-vitals"].rules,
+    {
+        plugins: {
+            "react-hooks": pluginReactHooks,
+        },
+        // Pinned rather than "detect": eslint-plugin-react's version detection
+        // calls context.getFilename(), removed in ESLint 10.
+        settings: { react: { version: "19.2.8" } },
+        rules: {
+            ...pluginReactHooks.configs.recommended.rules,
+            // React scope no longer necessary with new JSX transform.
+            "react/react-in-jsx-scope": "off",
+        },
     },
-  },
-  {
-    plugins: {
-      "react-hooks": pluginReactHooks,
-    },
-    // Pinned rather than "detect": eslint-plugin-react's version detection
-    // calls context.getFilename(), removed in ESLint 10.
-    settings: { react: { version: "19.2.8" } },
-    rules: {
-      ...pluginReactHooks.configs.recommended.rules,
-      // React scope no longer necessary with new JSX transform.
-      "react/react-in-jsx-scope": "off",
-    },
-  },
 ];

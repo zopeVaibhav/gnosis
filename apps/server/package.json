@@ -9,7 +9,7 @@
         "build": "bun build src/index.ts --target=bun --outdir=dist --packages=external --sourcemap=linked",
         "start": "bun dist/index.js",
         "lint": "eslint . --max-warnings 0",
-        "check-types": "tsc --noEmit"
+        "typecheck": "tsc --noEmit"
     },
     "dependencies": {
         "@gnosis/database": "workspace:*",

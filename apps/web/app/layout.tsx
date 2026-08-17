@@ -1,22 +1,22 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import './globals.css';
-import SessionSetter from '@/src/utility/SessionSetter';
-import AxiosBootstrap from '@/src/utility/AxiosBootstrap';
-import { getServerSession } from 'next-auth';
-import { authOptions } from './api/auth/[...nextauth]/options';
-import ToastProvider from '@/src/lib/ToastProvider';
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import SessionSetter from "@/providers/SessionSetter";
+import AxiosBootstrap from "@/providers/AxiosBootstrap";
+import { getServerSession } from "next-auth";
+import { authOptions } from "./api/auth/[...nextauth]/options";
+import ToastProvider from "@/providers/ToastProvider";
 
 const inter = Inter({
-    variable: '--font-dm-sans',
-    subsets: ['latin'],
+    variable: "--font-dm-sans",
+    subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-    title: 'Gnosis',
-    description: 'AI Knowledgebase Summarizer',
+    title: "Gnosis",
+    description: "AI Knowledgebase Summarizer",
     icons: {
-        icon: '/favicon.svg',
+        icon: "/favicon.svg",
     },
 };
 

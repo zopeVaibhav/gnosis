@@ -1,9 +1,9 @@
-import { LINK_INTEGRATION_URL, SIGN_URL } from '@/routes/api-routes';
-import { GoogleAuth } from '@gnosis/types';
-import axios from 'axios';
-import { Account, NextAuthOptions, Profile } from 'next-auth';
-import Github from 'next-auth/providers/github';
-import GoogleProvider from 'next-auth/providers/google';
+import { LINK_INTEGRATION_URL, SIGN_URL } from "@/routes/api_routes";
+import { GoogleAuth } from "@gnosis/types";
+import axios from "axios";
+import { Account, NextAuthOptions, Profile } from "next-auth";
+import Github from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google";
 
 export type AppUser = {
     id?: string | null;
@@ -20,12 +20,12 @@ export type AppToken = {
     refreshTokenExpiresAt?: string;
 };
 
-export const isProd = process.env.NODE_ENV === 'production';
+export const isProd = process.env.NODE_ENV === "production";
 
 export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET,
     pages: {
-        signIn: '/',
+        signIn: "/",
     },
     callbacks: {
         async signIn({
@@ -39,9 +39,9 @@ export const authOptions: NextAuthOptions = {
         }) {
             try {
                 if (!account) return false;
-                if (account.provider !== 'google' && account.provider !== 'github') return false;
+                if (account.provider !== "google" && account.provider !== "github") return false;
 
-                if (account.provider === 'google') {
+                if (account.provider === "google") {
                     if (!(profile as { email_verified?: boolean })?.email_verified) {
                         return false;
                     }
@@ -49,7 +49,7 @@ export const authOptions: NextAuthOptions = {
 
                 if (!user.email) return false;
 
-                const isServiceLink = ['gmail', 'drive', 'calendar'].some((s) =>
+                const isServiceLink = ["gmail", "drive", "calendar"].some((s) =>
                     account.scope?.includes(s),
                 );
                 const url = isServiceLink ? LINK_INTEGRATION_URL : SIGN_URL;
@@ -65,7 +65,7 @@ export const authOptions: NextAuthOptions = {
                     },
                     {
                         headers: {
-                            'X-Internal-Secret': process.env.INTERNAL_API_SECRET ?? '',
+                            "X-Internal-Secret": process.env.INTERNAL_API_SECRET ?? "",
                         },
                     },
                 );
@@ -84,7 +84,7 @@ export const authOptions: NextAuthOptions = {
                     refreshTokenExpiresAt,
                 } = result.data;
 
-                user.id = String(backendUser?.id ?? '');
+                user.id = String(backendUser?.id ?? "");
 
                 // store tokens on user object so jwt callback can pick them up
                 (user as AppUser & AppToken).accessToken = accessToken;
@@ -94,7 +94,7 @@ export const authOptions: NextAuthOptions = {
 
                 return true;
             } catch (error) {
-                console.error('signIn callback error', error);
+                console.error("signIn callback error", error);
                 return false;
             }
         },

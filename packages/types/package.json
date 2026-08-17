@@ -10,7 +10,7 @@
         }
     },
     "scripts": {
-        "check-types": "tsc --noEmit"
+        "typecheck": "tsc --noEmit"
     },
     "devDependencies": {
         "@gnosis/typescript-config": "workspace:*",

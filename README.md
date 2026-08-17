@@ -42,7 +42,8 @@ All apps read this single root `.env`.
 | -------------------------------------------------- | ----------------------- |
 | `bun run dev`                                      | Run web + server in dev |
 | `bun run build`                                    | Build everything        |
-| `bun run lint` / `bun run check-types`             | Lint / typecheck        |
+| `bun run lint` / `bun run typecheck`               | Lint / typecheck        |
+| `bun run format` / `bun run format:check`          | Prettier write / check  |
 | `bun run db:generate` / `db:migrate` / `db:studio` | Prisma                  |
 
 Filter: `bun run --filter @gnosis/web dev`, `bun run --filter @gnosis/server dev`.
@@ -63,4 +64,4 @@ docker compose -f docker-compose.prod.yml up -d
 ## Git hooks
 
 - pre-commit: `lint-staged` (Prettier).
-- pre-push: typecheck + build.
+- pre-push: `format:check` + lint + typecheck + build.

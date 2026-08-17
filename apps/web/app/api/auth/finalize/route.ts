@@ -1,16 +1,16 @@
-import { AppToken, isProd } from '../[...nextauth]/options';
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
-import { NextRequest } from 'next/server';
+import { AppToken, isProd } from "../[...nextauth]/options";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
+import { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-    const callbackUrl = req.nextUrl.searchParams.get('callbackUrl') ?? '/';
+    const callbackUrl = req.nextUrl.searchParams.get("callbackUrl") ?? "/";
 
     if (!token) {
-        return NextResponse.redirect(new URL('/', req.url));
+        return NextResponse.redirect(new URL("/", req.url));
     }
 
     const { accessToken, refreshToken, accessTokenExpiresInSec, refreshTokenExpiresAt } =
@@ -19,19 +19,19 @@ export async function GET(req: NextRequest) {
     if (accessToken && refreshToken) {
         const cookieStore = await cookies();
 
-        cookieStore.set('accessToken', accessToken, {
+        cookieStore.set("accessToken", accessToken, {
             httpOnly: true,
             secure: isProd,
-            sameSite: 'strict',
-            path: '/',
+            sameSite: "strict",
+            path: "/",
             maxAge: accessTokenExpiresInSec,
         });
 
-        cookieStore.set('refreshToken', refreshToken, {
+        cookieStore.set("refreshToken", refreshToken, {
             httpOnly: true,
             secure: isProd,
-            sameSite: 'strict',
-            path: '/',
+            sameSite: "strict",
+            path: "/",
             expires: refreshTokenExpiresAt ? new Date(refreshTokenExpiresAt) : undefined,
         });
     }

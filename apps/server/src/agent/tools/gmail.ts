@@ -1,9 +1,9 @@
-import { tool } from '@langchain/core/tools';
-import { GMAIL_GET_MESSAGE_DESC, GMAIL_SEARCH_DESC } from '../const/toolsDescription';
-import z from 'zod';
-import { NotConnectedError } from '../client/error';
-import { getGmailClient } from '../client/googleClient';
-import { gmail_v1 } from 'googleapis';
+import { tool } from "@langchain/core/tools";
+import { GMAIL_GET_MESSAGE_DESC, GMAIL_SEARCH_DESC } from "../const/tools-description";
+import z from "zod";
+import { NotConnectedError } from "../client/error";
+import { getGmailClient } from "../client/google.client";
+import { gmail_v1 } from "googleapis";
 
 const collectPart = (
     part: gmail_v1.Schema$MessagePart | undefined | null,
@@ -12,25 +12,25 @@ const collectPart = (
 ) => {
     if (!part) return;
     if (part.mimeType === mime && part.body?.data) {
-        out.push(Buffer.from(part.body.data, 'base64url').toString('utf-8'));
+        out.push(Buffer.from(part.body.data, "base64url").toString("utf-8"));
     }
     part.parts?.forEach((p) => collectPart(p, mime, out));
 };
 
 const extractBody = (payload: gmail_v1.Schema$MessagePart | undefined | null): string => {
-    if (!payload) return '';
+    if (!payload) return "";
     const plain: string[] = [];
-    collectPart(payload, 'text/plain', plain);
-    if (plain.length) return plain.join('\n');
+    collectPart(payload, "text/plain", plain);
+    if (plain.length) return plain.join("\n");
     const html: string[] = [];
-    collectPart(payload, 'text/html', html);
-    return html.join('\n');
+    collectPart(payload, "text/html", html);
+    return html.join("\n");
 };
 
 const headerValue = (
     headers: gmail_v1.Schema$MessagePartHeader[] | undefined | null,
     name: string,
-): string => headers?.find((x) => x.name?.toLowerCase() === name.toLocaleLowerCase())?.value ?? '';
+): string => headers?.find((x) => x.name?.toLowerCase() === name.toLocaleLowerCase())?.value ?? "";
 
 export const buildGmailTools = (userId: string) => {
     const gmailSearch = tool(
@@ -39,7 +39,7 @@ export const buildGmailTools = (userId: string) => {
             try {
                 const gmail = await getGmailClient(userId);
                 const list = await gmail.users.messages.list({
-                    userId: 'me',
+                    userId: "me",
                     q: query,
                     maxResults,
                 });
@@ -50,19 +50,19 @@ export const buildGmailTools = (userId: string) => {
                 const messages = await Promise.all(
                     ids.map(async ({ id }) => {
                         const msg = await gmail.users.messages.get({
-                            userId: 'me',
+                            userId: "me",
                             id: id!,
-                            format: 'metadata',
-                            metadataHeaders: ['From', 'Subject', 'Date'],
+                            format: "metadata",
+                            metadataHeaders: ["From", "Subject", "Date"],
                         });
                         const headers = msg.data.payload?.headers ?? [];
                         const h = (name: string) => headerValue(headers, name);
                         return {
                             id: msg.data.id,
-                            from: h('From'),
-                            subject: h('Subject'),
-                            date: h('Date'),
-                            snippet: msg.data.snippet ?? '',
+                            from: h("From"),
+                            subject: h("Subject"),
+                            date: h("Date"),
+                            snippet: msg.data.snippet ?? "",
                         };
                     }),
                 );
@@ -70,17 +70,17 @@ export const buildGmailTools = (userId: string) => {
             } catch (error) {
                 if (error instanceof NotConnectedError) {
                     return JSON.stringify({
-                        error: 'not_connected',
-                        provider: 'google',
-                        message: 'User has not connected gmail. Ask them to link Google',
+                        error: "not_connected",
+                        provider: "google",
+                        message: "User has not connected gmail. Ask them to link Google",
                     });
                 }
-                console.error('gmail.search', error);
-                return JSON.stringify({ error: 'tool_failed', message: 'Gmail search Failed' });
+                console.error("gmail.search", error);
+                return JSON.stringify({ error: "tool_failed", message: "Gmail search Failed" });
             }
         },
         {
-            name: 'gmail_search',
+            name: "gmail_search",
             description: GMAIL_SEARCH_DESC,
             schema: z.object({
                 query: z.string().describe('Gmail Search e.g. "from: alice@x.com subject:invoice"'),
@@ -91,7 +91,7 @@ export const buildGmailTools = (userId: string) => {
                     .min(1)
                     .max(20)
                     .default(10)
-                    .describe('How many messages to return (1-20)'),
+                    .describe("How many messages to return (1-20)"),
             }),
         },
     );
@@ -102,9 +102,9 @@ export const buildGmailTools = (userId: string) => {
             try {
                 const gmail = await getGmailClient(userId);
                 const { data } = await gmail.users.messages.get({
-                    userId: 'me',
+                    userId: "me",
                     id,
-                    format: 'full',
+                    format: "full",
                 });
 
                 const headers = data.payload?.headers ?? [];
@@ -115,47 +115,47 @@ export const buildGmailTools = (userId: string) => {
 
                 return JSON.stringify({
                     id: data.id,
-                    from: h('From'),
-                    date: h('Date'),
-                    to: h('To'),
-                    cc: h('Cc'),
-                    subject: h('Subject'),
+                    from: h("From"),
+                    date: h("Date"),
+                    to: h("To"),
+                    cc: h("Cc"),
+                    subject: h("Subject"),
                     body: truncated ? body.slice(0, MAX) : body,
                     truncated,
                 });
             } catch (error) {
                 if (error instanceof NotConnectedError) {
                     return JSON.stringify({
-                        error: 'not_connected',
-                        provider: 'google',
-                        message: 'User has not connected gmail. Ask them to link',
+                        error: "not_connected",
+                        provider: "google",
+                        message: "User has not connected gmail. Ask them to link",
                     });
                 }
                 const apiMessage =
-                    error && typeof error === 'object' && 'message' in error
+                    error && typeof error === "object" && "message" in error
                         ? String((error as { message: unknown }).message)
-                        : '';
-                if (apiMessage.toLowerCase().includes('invalid id')) {
-                    console.warn('[tool] gmail_get_message invalid_id', { apiMessage });
+                        : "";
+                if (apiMessage.toLowerCase().includes("invalid id")) {
+                    console.warn("[tool] gmail_get_message invalid_id", { apiMessage });
                     return JSON.stringify({
-                        error: 'invalid_id',
+                        error: "invalid_id",
                         message:
-                            'Gmail rejected the id as invalid. Call gmail_search first and pass the exact hex id from the results.',
+                            "Gmail rejected the id as invalid. Call gmail_search first and pass the exact hex id from the results.",
                     });
                 }
-                console.error('gmail.get_message', error);
-                return JSON.stringify({ error: 'tool_failed', message: 'Gmail get tool failed' });
+                console.error("gmail.get_message", error);
+                return JSON.stringify({ error: "tool_failed", message: "Gmail get tool failed" });
             }
         },
         {
-            name: 'gmail_get_message',
+            name: "gmail_get_message",
             description: GMAIL_GET_MESSAGE_DESC,
             schema: z.object({
                 id: z
                     .string()
                     .regex(
                         /^[0-9a-f]+$/i,
-                        'Gmail ids are hex strings — copy the id verbatim from gmail_search results',
+                        "Gmail ids are hex strings — copy the id verbatim from gmail_search results",
                     )
                     .describe(
                         'The Gmail message id from gmail_search results (hex string, e.g. "196e8f2a3b4d5e6f")',
