@@ -1,165 +1,200 @@
 "use client";
 
-import { motion } from "framer-motion";
-import {
-    LucideIcon,
-    SquarePen,
-    Search,
-    PanelLeftClose,
-    PanelRightOpen,
-    MessageCircle,
-    LogOut,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { SquarePen, Search, PanelLeftClose, PanelRightOpen, LogOut } from "lucide-react";
+import { memo, useCallback, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { Chat } from "@gnosis/types";
 import AppLogo from "./AppLogo";
 import IconButton from "./shared/IconButton";
+import Skeleton from "./shared/Skeleton";
 import LogoutModal from "./LogoutModal";
+import SidebarRow from "./sidebar/SidebarRow";
+import SidebarSection from "./sidebar/SidebarSection";
+import ResizeHandle, { clampWidth, SIDEBAR_DEFAULT_WIDTH } from "./sidebar/ResizeHandle";
 import { useKeyboardShortcut } from "@/hooks/useKeyboardShortcut";
-import Image from "next/image";
+import { useChats } from "@/hooks/chat/useChats";
 import { useUserSessionStore } from "@/store/user/useUserSessionStore";
-import { GET_CHATS } from "@/routes/api_routes";
-import { useChatListStore } from "@/store/chat/useChatListStore";
-import { Chat } from "@gnosis/types";
+import { useTypedReveal } from "@/lib/typed-reveal";
+import { EASE_OUT, ENTRANCE_SECONDS } from "@/lib/motion";
 
-interface IsiderMenu {
-    icon: LucideIcon;
-    label: string;
-    shortcut?: string;
-    onClick: () => void;
+const COLLAPSED_WIDTH = 52;
+// past this many rows, animating reorders costs more than it shows
+const MAX_ANIMATED_ROWS = 60;
+
+// shaped like the rows that are coming, on the same 28px pitch so nothing jumps when they land
+const SKELETON_WIDTHS = ["w-3/4", "w-2/3", "w-5/6", "w-1/2", "w-3/4", "w-2/3", "w-4/5", "w-1/2"];
+
+const ChatRow = memo(function ChatRow({
+    chat,
+    active,
+    animateOrder,
+}: {
+    chat: Chat;
+    active: boolean;
+    animateOrder: boolean;
+}) {
+    const shouldReduceMotion = useReducedMotion();
+    // types in only when the title first arrives mid-stream
+    const title = useTypedReveal(chat.title);
+
+    return (
+        <motion.div
+            initial={{
+                opacity: 0,
+                transform: shouldReduceMotion ? "none" : "translateY(-8px)",
+            }}
+            animate={{ opacity: 1, transform: "translateY(0px)" }}
+            exit={{ opacity: 0 }}
+            layout={animateOrder && !shouldReduceMotion ? "position" : false}
+            transition={{ duration: ENTRANCE_SECONDS, ease: EASE_OUT }}
+        >
+            <SidebarRow href={`/chat/${chat.id}`} label={title || "New chat"} active={active} />
+        </motion.div>
+    );
+});
+
+function ChatsSkeleton() {
+    return (
+        <div aria-label="Loading chats" role="status" className="flex flex-col gap-px">
+            {SKELETON_WIDTHS.map((width, idx) => (
+                <div key={idx} aria-hidden className="flex h-7 items-center px-2">
+                    <Skeleton className={`h-3 ${width}`} />
+                </div>
+            ))}
+        </div>
+    );
 }
 
 export default function ChatsSidebar() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [recentsOpen, setRecentsOpen] = useState(true);
+    const [width, setWidthState] = useState(SIDEBAR_DEFAULT_WIDTH);
+    const [dragging, setDragging] = useState(false);
     const [logoutOpen, setLogoutOpen] = useState(false);
-    const { chatList, setChatList } = useChatListStore();
-    const [loadingChats, setLoadingChats] = useState(true);
-    const { session } = useUserSessionStore();
+    const { data: session, status } = useSession();
+    const accessToken = useUserSessionStore((s) => s.accessToken);
+    const { data: chatList = [], isLoading } = useChats();
+    // the store gets its token one effect after the session, so keep the skeleton until then
+    const loadingChats = isLoading || (status !== "unauthenticated" && !accessToken);
     const router = useRouter();
     const { id: activeChatId } = useParams<{ id?: string }>();
 
-    const sidebarMenu: IsiderMenu[] = [
-        {
-            icon: SquarePen,
-            label: "New Chat",
-            shortcut: "⌘N",
-            onClick: () => router.push("/chat"),
-        },
-        {
-            icon: Search,
-            label: "Search Chats",
-            onClick: () => console.log("SEARCH CHATS"),
-        },
-    ];
+    const setWidth = useCallback((next: number) => setWidthState(clampWidth(next)), []);
+    const collapse = useCallback(() => setSidebarOpen(false), []);
 
     useKeyboardShortcut("b", () => setSidebarOpen((v) => !v), { meta: true });
-    useKeyboardShortcut("n", () => router.push("/"), { meta: true });
+    useKeyboardShortcut("n", () => router.push("/chat"), { meta: true });
 
-    useEffect(() => {
-        axios
-            .get<Chat[]>(GET_CHATS)
-            .then((res) => setChatList(res.data ?? []))
-            .catch(() => {})
-            .finally(() => setLoadingChats(false));
-    }, []);
+    const animateOrder = chatList.length <= MAX_ANIMATED_ROWS;
 
     return (
         <motion.div
-            className="border-r border-border h-full overflow-hidden p-2 py-3 flex flex-col"
+            className="relative border-r border-border h-full shrink-0 overflow-hidden flex flex-col"
             initial={false}
-            animate={{
-                width: sidebarOpen ? 280 : 55,
-            }}
-            transition={{ ease: "easeOut" }}
+            animate={{ width: sidebarOpen ? width : COLLAPSED_WIDTH }}
+            transition={dragging ? { duration: 0 } : { duration: 0.25, ease: EASE_OUT }}
         >
-            <div className="flex items-center h-8">
-                <motion.div
-                    className="flex-1 min-w-0 overflow-hidden whitespace-nowrap"
-                    animate={{ opacity: sidebarOpen ? 1 : 0 }}
-                    transition={{ duration: 0.15 }}
-                >
-                    <div className="pl-2">
+            <div className="flex h-12 shrink-0 items-center justify-between gap-1 px-2">
+                {sidebarOpen && (
+                    <div className="min-w-0 truncate pl-2">
                         <AppLogo textOnly={true} />
                     </div>
-                </motion.div>
+                )}
                 <IconButton
-                    size="md"
-                    className="shrink-0"
+                    size="sm"
+                    className={`shrink-0 ${sidebarOpen ? "" : "mx-auto"}`}
                     icon={sidebarOpen ? PanelLeftClose : PanelRightOpen}
+                    label={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
                     onClick={() => setSidebarOpen((v) => !v)}
                 />
             </div>
 
-            <div className="flex flex-col mt-4">
-                {sidebarMenu.map((menu, idx) => (
-                    <div
-                        key={idx}
-                        className={`group flex items-center justify-between cursor-pointer hover:bg-surface-faded transition-colors rounded-full ${sidebarOpen ? "rounded-lg" : ""}`}
-                        onClick={() => menu.onClick()}
-                    >
-                        <div className="flex items-center gap-1">
-                            <IconButton icon={menu.icon} />
-                            {sidebarOpen && (
-                                <span className="text-sm whitespace-nowrap">{menu.label} </span>
-                            )}
-                        </div>
-                        <div className="opacity-0 group-hover:opacity-100 text-xs text-muted transition-opacity pr-2">
-                            {sidebarOpen && menu.shortcut}
-                        </div>
-                    </div>
-                ))}
-            </div>
+            <nav className="flex min-h-0 flex-1 flex-col gap-4 px-2 pb-2">
+                <div className="flex shrink-0 flex-col gap-px">
+                    <SidebarRow
+                        icon={SquarePen}
+                        label="New chat"
+                        collapsed={!sidebarOpen}
+                        onClick={() => router.push("/chat")}
+                        trailing={
+                            <span className="text-xs text-muted opacity-0 transition-opacity group-hover/row:opacity-100">
+                                ⌘N
+                            </span>
+                        }
+                    />
+                    <SidebarRow
+                        icon={Search}
+                        label="Search chats"
+                        collapsed={!sidebarOpen}
+                        onClick={() => console.log("SEARCH CHATS")}
+                    />
+                </div>
 
-            {sidebarOpen ? (
-                <>
-                    <div className="p-2 mt-5 text-xs font-light text-muted">Recents</div>
-                    <div className="overflow-y-auto -mr-2 pr-2">
-                        {loadingChats
-                            ? Array.from({ length: 15 }).map((_, idx) => (
-                                  <div key={idx} className="p-2">
-                                      <div
-                                          className="h-4 rounded bg-surface-faded animate-pulse"
-                                          style={{ width: `${60 + ((idx * 13) % 35)}%` }}
-                                      />
-                                  </div>
-                              ))
-                            : chatList.map((chat, index) => (
-                                  <div
-                                      key={index}
-                                      className={`p-2 text-sm truncate mb-0.5 cursor-pointer hover:bg-surface-faded rounded-lg ${chat.id === activeChatId ? "bg-surface-faded" : ""}`}
-                                      onClick={() => router.push(`/chat/${chat.id}`)}
-                                  >
-                                      {chat.title || "New chat"}
-                                  </div>
-                              ))}
-                    </div>
-                </>
-            ) : (
-                <IconButton icon={MessageCircle} />
-            )}
-
-            <div className="mt-auto flex gap-2 items-center p-2 bg-surface-faded rounded-lg">
-                <Image
-                    src={session?.user?.image || "/logo-filled.png"}
-                    alt="Profile"
-                    width={32}
-                    height={32}
-                    className="rounded-full shrink-0"
-                />
                 {sidebarOpen && (
-                    <>
-                        <span className="text-sm truncate min-w-0 flex-1">
-                            {session?.user.name}
-                        </span>
-                        <IconButton
-                            icon={LogOut}
-                            label="Logout"
-                            onClick={() => setLogoutOpen(true)}
-                        />
-                    </>
+                    <SidebarSection
+                        label="Recents"
+                        open={recentsOpen}
+                        onToggle={() => setRecentsOpen((v) => !v)}
+                    >
+                        {loadingChats ? (
+                            <ChatsSkeleton />
+                        ) : chatList.length === 0 ? (
+                            <p className="px-2 py-1 text-sm text-muted">No chats yet</p>
+                        ) : (
+                            <AnimatePresence initial={false}>
+                                {chatList.map((chat) => (
+                                    <ChatRow
+                                        key={chat.id}
+                                        chat={chat}
+                                        active={chat.id === activeChatId}
+                                        animateOrder={animateOrder}
+                                    />
+                                ))}
+                            </AnimatePresence>
+                        )}
+                    </SidebarSection>
                 )}
+            </nav>
+
+            <div className="shrink-0 px-2 pt-1 pb-2">
+                <div
+                    className={`flex h-9 w-full items-center gap-2 rounded-md px-2 text-sm ${sidebarOpen ? "" : "justify-center px-0"}`}
+                >
+                    <Image
+                        src={session?.user?.image || "/logo-filled.png"}
+                        alt="Profile"
+                        width={24}
+                        height={24}
+                        className="size-6 rounded-full shrink-0"
+                    />
+                    {sidebarOpen && (
+                        <>
+                            <span className="min-w-0 flex-1 truncate text-foreground/80">
+                                {session?.user?.name || session?.user?.email}
+                            </span>
+                            <IconButton
+                                size="sm"
+                                icon={LogOut}
+                                label="Log out"
+                                onClick={() => setLogoutOpen(true)}
+                            />
+                        </>
+                    )}
+                </div>
             </div>
+
+            {sidebarOpen && (
+                <ResizeHandle
+                    width={width}
+                    dragging={dragging}
+                    setWidth={setWidth}
+                    setDragging={setDragging}
+                    onCollapse={collapse}
+                />
+            )}
 
             <LogoutModal open={logoutOpen} onClose={() => setLogoutOpen(false)} />
         </motion.div>

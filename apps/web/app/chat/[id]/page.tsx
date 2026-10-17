@@ -1,57 +1,42 @@
 "use client";
 
 import ChatInput from "@/components/ChatInput";
-import { useEffect, useRef } from "react";
-import { Message, ROLE } from "@gnosis/types";
+import ChatTranscript from "@/components/chat/ChatTranscript";
+import { useEffect } from "react";
 import { useChatStore } from "@/store/chat/useChatStore";
 import { useParams, useRouter } from "next/navigation";
-import { GET_MESSAGES } from "@/routes/api_routes";
-import axios from "axios";
+import { isNotFound, useMessages } from "@/hooks/chat/useMessages";
 
 export default function ChatPage() {
-    const { messages, setActiveChatId, reset, setMessages } = useChatStore();
+    const { messages, isStreaming, error, setActiveChatId, reset, setMessages } = useChatStore();
     const router = useRouter();
-    const bottomRef = useRef<HTMLDivElement>(null);
     const { id } = useParams<{ id: string }>();
+    const { data, error: loadError, isLoading } = useMessages(id);
 
     useEffect(() => {
         if (!id) return;
         setActiveChatId(id);
-        if (useChatStore.getState().isStreaming) return;
-        axios
-            .get<Message[]>(GET_MESSAGES(id))
-            .then((res) => {
-                setMessages(res.data ?? []);
-            })
-            .catch((res) => {
-                if (res.status === 404) {
-                    return router.push("/");
-                }
-            });
         return () => reset();
-    }, [id]);
+    }, [id, setActiveChatId, reset]);
 
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages]);
+        // the store owns messages mid-stream; server copy lands once the stream ends and the query refetches
+        if (!data || useChatStore.getState().isStreaming) return;
+        setMessages(data);
+    }, [data, setMessages]);
+
+    useEffect(() => {
+        if (isNotFound(loadError)) router.push("/");
+    }, [loadError, router]);
 
     return (
         <>
-            <div className="w-3xl flex-1 py-4">
-                {messages.map((m) => (
-                    <div
-                        ref={bottomRef}
-                        key={m.id}
-                        className={`flex ${m.role === ROLE.USER ? "justify-end" : "justify-start"}`}
-                    >
-                        <div
-                            className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${m.role === ROLE.USER ? "bg-surface-faded rounded-br-none" : "bg-transparent"}`}
-                        >
-                            {m.content || (m.pending ? <span>Loading</span> : null)}
-                        </div>
-                    </div>
-                ))}
-            </div>
+            <ChatTranscript
+                messages={messages}
+                restoring={isLoading}
+                isStreaming={isStreaming}
+                error={error}
+            />
             <div className="pb-4 sticky bottom-0 z-50 bg-background w-3xl">
                 <ChatInput />
             </div>

@@ -18,8 +18,8 @@ export default function SignInModal({ open, onClose }: SignInModalProps) {
                 style={{
                     background: `
                         radial-gradient(ellipse 60% 35% at 50% 0%,
-                            rgba(79,57,246,0.22) 0%,
-                            rgba(167,139,250,0.07) 40%,
+                            oklch(0.9521 0 0 / 0.08) 0%,
+                            oklch(0.9521 0 0 / 0.03) 40%,
                             transparent 70%
                         )
                     `,
@@ -30,7 +30,7 @@ export default function SignInModal({ open, onClose }: SignInModalProps) {
                 className="absolute left-1/2 -translate-x-1/2 w-20 h-0.5 blur-[10px]"
                 style={{
                     background:
-                        "radial-gradient(ellipse at center, rgba(79,57,246,0.8) 0%, transparent 70%)",
+                        "radial-gradient(ellipse at center, oklch(0.9521 0 0 / 0.5) 0%, transparent 70%)",
                 }}
             />
 
@@ -46,9 +46,7 @@ export default function SignInModal({ open, onClose }: SignInModalProps) {
                 {/* OAuth buttons — stacked */}
                 <div className="flex flex-col gap-3 w-full">
                     <button
-                        onClick={() =>
-                            signIn("google", { callbackUrl: "/api/auth/finalize?callbackUrl=/" })
-                        }
+                        onClick={() => signIn("google", { callbackUrl: "/" })}
                         className="flex items-center justify-center gap-2.5 w-full rounded-full px-4 py-2.5 text-sm font-medium cursor-pointer transition-all border border-border bg-surface-raised text-foreground hover:bg-surface-faded"
                     >
                         <Image src="/icons/google.png" alt="Google" width={16} height={16} />
@@ -56,9 +54,7 @@ export default function SignInModal({ open, onClose }: SignInModalProps) {
                     </button>
 
                     <button
-                        onClick={() =>
-                            signIn("github", { callbackUrl: "/api/auth/finalize?callbackUrl=/" })
-                        }
+                        onClick={() => signIn("github", { callbackUrl: "/" })}
                         className="flex items-center justify-center gap-2.5 w-full rounded-full px-4 py-2.5 text-sm font-medium cursor-pointer transition-all border border-border bg-surface-raised text-foreground hover:bg-surface-faded"
                     >
                         <Image

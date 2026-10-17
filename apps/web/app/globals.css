@@ -1,39 +1,47 @@
 @import 'tailwindcss';
 @import 'goey-toast/styles.css';
 
+@source "../node_modules/streamdown/dist/*.js";
+@source "../node_modules/@streamdown/code/dist/*.js";
+
 :root {
+    /* Colours from the openbot ui-revamp dark theme: neutral greys, chroma 0 throughout */
+    color-scheme: dark;
+
     /* Backgrounds */
-    --background: #191919;
-    --surface: #1c1c1c;
-    --surface-raised: #222222;
-    --surface-faded: #262626;
+    --background: oklch(0.1776 0 0);
+    --surface: oklch(0.2431 0 0);
+    --surface-raised: oklch(0.329 0 0);
+    --surface-faded: oklch(0.2431 0 0);
 
     /* Text */
-    --foreground: #D4D4D4;
-    --muted: rgba(212, 212, 212, 0.5);
+    --foreground: oklch(0.9521 0 0);
+    --muted: oklch(0.6236 0 0);
 
     /* Borders */
-    --border: rgba(255, 255, 255, 0.07);
-    --border-strong: rgba(255, 255, 255, 0.13);
+    --border: oklch(0.3325 0 0);
+    --border-strong: oklch(0.4336 0 0);
+    --ring: oklch(0.6236 0 0);
 
     /* Brand */
-    --primary: #4f39f6;
-    --primary-hover: #615fff;
-    --primary-dim: rgba(79, 57, 246, 0.15);
+    --primary: oklch(0.9521 0 0);
+    --primary-hover: oklch(0.9521 0 0 / 0.8);
+    --primary-foreground: oklch(0.1957 0 0);
+    --primary-dim: transparent;
 
     /* Accent */
-    --accent: #00d4ff;
-    --accent-dim: rgba(0, 212, 255, 0.12);
+    --accent: oklch(0.329 0 0);
+    --accent-dim: oklch(0.329 0 0 / 0.5);
 
     /* Glow colors */
-    --glow-green: rgba(0, 212, 255, 0.45);
-    --glow-blue: rgba(79, 172, 254, 0.55);
-    --glow-purple: rgba(120, 80, 255, 0.25);
+    --glow-green: oklch(0.9521 0 0 / 0.2);
+    --glow-blue: oklch(0.9521 0 0 / 0.3);
+    --glow-purple: oklch(0.9521 0 0 / 0.1);
 
     /* Semantic */
-    --danger: #ef4444;
-    --success: #22c55e;
-    --muted-text: #6e6e6e;;
+    --danger: oklch(0.68 0.18 25.5);
+    --success: oklch(0.704 0.14 182.503);
+    --muted-text: oklch(0.6236 0 0);
 }
 
 @theme inline {
@@ -46,9 +54,13 @@
     --color-border: var(--border);
     --color-primary: var(--primary);
     --color-primary-hover: var(--primary-hover);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-ring: var(--ring);
     --color-accent: var(--accent);
     --color-danger: var(--danger);
     --color-success: var(--success);
+    --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+    --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 * {
@@ -58,7 +70,7 @@
 body {
     background: var(--background);
     color: var(--foreground);
-    font-family: var(--font-dm-sans), sans-serif;
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
 }
 
@@ -144,4 +156,41 @@ body::after {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
     z-index: 9999;
     mix-blend-mode: overlay;
+}
+
+@utility scrollbar-none {
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+/* Text that sweeps while work is in flight. Built from currentColor so it takes the text colour it is given. */
+.shimmer-text {
+    background-image: linear-gradient(
+        100deg,
+        currentColor 40%,
+        color-mix(in oklab, currentColor 25%, transparent) 50%,
+        currentColor 60%
+    );
+    background-size: 250% 100%;
+    background-position: 100% 0;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer-sweep 1.6s linear infinite;
+}
+
+@keyframes shimmer-sweep {
+    to {
+        background-position: -150% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .shimmer-text {
+        animation: none;
+        background-image: none;
+        -webkit-text-fill-color: currentColor;
+    }
 }

@@ -1,8 +1,6 @@
 "use client";
 
-import axios from "axios";
 import { signOut } from "next-auth/react";
-import { LOGOUT_URL } from "@/routes/api_routes";
 import Modal from "./shared/Modal";
 import Button from "./shared/Button";
 
@@ -12,12 +10,7 @@ interface LogoutModalProps {
 }
 
 export default function LogoutModal({ open, onClose }: LogoutModalProps) {
-    const handleLogout = async () => {
-        try {
-            await axios.post(LOGOUT_URL, {});
-        } catch {}
-        await signOut({ callbackUrl: "/" });
-    };
+    const handleLogout = () => signOut({ callbackUrl: "/" });
 
     return (
         <Modal open={open} onClose={onClose} className="p-6 w-96">

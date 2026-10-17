@@ -10,7 +10,7 @@
         "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,md}\"",
         "typecheck": "turbo run typecheck",
         "db:generate": "turbo run generate --filter=@gnosis/database",
-        "db:migrate": "bun run --filter @gnosis/database migrate",
+        "db:migrate": "cd packages/database && bun run migrate",
         "db:studio": "bun run --filter @gnosis/database studio",
         "pre-push": "bun run format:check && bun run lint && bun run typecheck",
         "prepare": "husky"

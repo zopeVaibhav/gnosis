@@ -1,14 +1,20 @@
 import { Request, Response } from "express";
-import { ERROR_CODES, REFRESH_COOKIE } from "@gnosis/types";
-import CookieService from "../../services/service.cookie";
+import z from "zod";
+import { prisma } from "@gnosis/database";
+import { ERROR_CODES } from "@gnosis/types";
+import { env } from "../../configs/env";
 import JwtService, { type SessionTokenPayload } from "../../services/service.jwt";
 import ResponseWriter from "../../services/service.response";
 
 export default class RefreshController {
+    static body_schema = z.object({
+        refreshToken: z.string().min(1),
+    });
+
     static async process(req: Request, res: Response) {
         try {
-            const token = req.cookies?.[REFRESH_COOKIE];
-            if (!token) {
+            const { data, success } = RefreshController.body_schema.safeParse(req.body);
+            if (!success) {
                 return ResponseWriter.unauthenticated(
                     res,
                     "Refresh token missing",
@@ -18,9 +24,8 @@ export default class RefreshController {
 
             let payload: SessionTokenPayload;
             try {
-                payload = JwtService.verify_refresh_token(token);
+                payload = JwtService.verify_refresh_token(data.refreshToken);
             } catch {
-                CookieService.clear_session_cookies(res);
                 return ResponseWriter.unauthenticated(
                     res,
                     "Refresh token expired",
@@ -28,13 +33,30 @@ export default class RefreshController {
                 );
             }
 
-            CookieService.set_session_cookies(res, {
-                accessToken: JwtService.sign_access_token(payload.userId),
-                refreshToken: JwtService.sign_refresh_token(payload.userId),
-                refreshExpiresAt: JwtService.refresh_expiry_date(),
+            const user = await prisma.user.findUnique({
+                where: { id: payload.userId },
+                select: { id: true },
             });
+            if (!user) {
+                return ResponseWriter.unauthenticated(
+                    res,
+                    "User no longer exists",
+                    ERROR_CODES.INVALID_REFRESH_TOKEN,
+                );
+            }
 
-            return ResponseWriter.success(res, null, "Refreshed");
+            // rotate both tokens so the refresh window slides with activity
+            const refreshExpiresAt = JwtService.refresh_expiry_date();
+            return ResponseWriter.success(
+                res,
+                {
+                    accessToken: JwtService.sign_access_token(user.id),
+                    refreshToken: JwtService.sign_refresh_token(user.id),
+                    accessTokenExpiresInSec: env.ACCESS_TOKEN_TTL_SEC,
+                    refreshTokenExpiresAt: refreshExpiresAt.toISOString(),
+                },
+                "Refreshed",
+            );
         } catch (err) {
             console.error("RefreshController error: ", err);
             return ResponseWriter.system_error(res);

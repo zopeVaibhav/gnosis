@@ -23,10 +23,9 @@ export default forwardRef<HTMLButtonElement, IconButtonProps>(function IconButto
     };
 
     const variants = {
-        ghost: "bg-transparent text-white hover:text-foreground hover:bg-surface-raised",
+        ghost: "bg-transparent text-foreground/80 hover:text-foreground hover:bg-surface-raised",
         surface: "bg-surface-raised text-muted hover:text-foreground border border-border",
-        primary:
-            "bg-primary text-white hover:bg-primary-hover shadow-[0_0_16px_var(--primary-dim)]",
+        primary: "bg-primary text-primary-foreground hover:bg-primary-hover",
     };
 
     return (

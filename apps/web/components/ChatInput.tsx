@@ -6,7 +6,7 @@ import IconButton from "./shared/IconButton";
 import Popover from "./shared/Popover";
 import { signIn } from "next-auth/react";
 import { GoogleAuth, placeholderSuggestions } from "@gnosis/types";
-import { useUserSessionStore } from "@/store/user/useUserSessionStore";
+import { useIntegrations } from "@/hooks/integrations/useIntegrations";
 import Image from "next/image";
 import useSendMessage from "@/hooks/useSendMessage";
 import { useChatStore } from "@/store/chat/useChatStore";
@@ -65,7 +65,7 @@ export default function ChatInput() {
 
     const [addSourcesPopover, setAddSourcesPopover] = useState(false);
     const [message, setMessage] = useState("");
-    const { integrations } = useUserSessionStore();
+    const { data: integrations } = useIntegrations();
     const { isStreaming } = useChatStore();
 
     const placeholder = useTypingAnimation(placeholderSuggestions);
@@ -100,10 +100,12 @@ export default function ChatInput() {
             ),
         [integrations],
     );
+
     // send message
     useKeyboardShortcut("Enter", () => {
         if (!isStreaming) return sendMessage(message);
     });
+
     // meta + enter to next line
     useKeyboardShortcut(
         "Enter",
@@ -123,7 +125,7 @@ export default function ChatInput() {
     useKeyboardShortcut("u", () => addSourceOptions[0]?.onClick(), { meta: true });
 
     return (
-        <div className="border border-border p-4 pb-2 rounded-xl w-full shadow-sm shadow-primary">
+        <div className="border border-ring/10 bg-surface p-4 pb-2 rounded-xl w-full focus-within:border-ring focus-within:ring-1 focus-within:ring-ring/10">
             <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
@@ -172,9 +174,9 @@ export default function ChatInput() {
                                 )}
                                 {item.key &&
                                     (item.connected ? (
-                                        <span className="bg-green-500 h-2 w-2 rounded-full animate-pulse"></span>
+                                        <span className="bg-success h-2 w-2 rounded-full animate-pulse"></span>
                                     ) : (
-                                        <span className="bg-red-500 h-2 w-2 rounded-full animate-pulse"></span>
+                                        <span className="bg-danger h-2 w-2 rounded-full animate-pulse"></span>
                                     ))}
                             </div>
                         ))}

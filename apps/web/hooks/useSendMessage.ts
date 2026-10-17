@@ -1,9 +1,15 @@
 import { STREAM_MESSAGE } from "@gnosis/types";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { useRef } from "react";
+import { QueryClient, useQueryClient } from "@tanstack/react-query";
+import type { Chat } from "@gnosis/types";
 import { useChatStore } from "@/store/chat/useChatStore";
 import { SEND_MESSAGE } from "@/routes/api_routes";
-import { useChatListStore } from "@/store/chat/useChatListStore";
+import { chatsQueryKey } from "@/hooks/chat/useChats";
+import { messagesQueryKey } from "@/hooks/chat/useMessages";
+import { useUserSessionStore } from "@/store/user/useUserSessionStore";
+import { renewAccessToken } from "@/lib/axios";
 
 type Frame = {
     type: STREAM_MESSAGE;
@@ -13,6 +19,7 @@ type Frame = {
 export default function useSendMessage() {
     const router = useRouter();
     const abortRef = useRef<AbortController | null>(null);
+    const queryClient = useQueryClient();
 
     const {
         appendUserMessage,
@@ -28,6 +35,12 @@ export default function useSendMessage() {
         const state = useChatStore.getState();
         if (!trimmed || state.isStreaming) return;
 
+        const token = useUserSessionStore.getState().accessToken;
+        if (!token) {
+            setError("Not authenticated");
+            return;
+        }
+
         appendUserMessage(trimmed);
         const assistantId = startAssistantStream();
 
@@ -35,24 +48,48 @@ export default function useSendMessage() {
         abortRef.current = controller;
 
         try {
-            const res = await fetch(SEND_MESSAGE, {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ message: trimmed, id: state.activeChatId ?? undefined }),
-                signal: controller.signal,
-            });
+            const post = (accessToken: string) =>
+                fetch(SEND_MESSAGE, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                    body: JSON.stringify({
+                        message: trimmed,
+                        id: state.activeChatId ?? undefined,
+                    }),
+                    signal: controller.signal,
+                });
+
+            let res = await post(token);
+            if (res.status === 401) {
+                const renewed = await renewAccessToken();
+                if (renewed) res = await post(renewed);
+            }
+            if (res.status === 401) {
+                finishStream();
+                signOut({ callbackUrl: "/" });
+                return;
+            }
             if (!res.ok || !res.body) {
                 setError("Failed to stream message");
                 finishStream();
                 return;
             }
             await readSSE(res.body, (frame) => {
-                handleFrame(frame, { assistantId, appendToken, setActiveChatId, router });
+                handleFrame(frame, {
+                    assistantId,
+                    appendToken,
+                    setActiveChatId,
+                    router,
+                    queryClient,
+                });
             });
             finishStream();
+
+            const chatId = useChatStore.getState().activeChatId;
+            if (chatId) queryClient.invalidateQueries({ queryKey: messagesQueryKey(chatId) });
         } catch (error) {
             if ((error as Error).name === "AbortError") return;
             setError("Stream interrupted");
@@ -103,17 +140,17 @@ function handleFrame(
         appendToken: (id: string, token: string) => void;
         setActiveChatId: (id: string | null) => void;
         router: ReturnType<typeof useRouter>;
+        queryClient: QueryClient;
     },
 ) {
-    const { appendChatList, updateChatTitle } = useChatListStore.getState();
     switch (frame.type) {
         case STREAM_MESSAGE.CHAT_CREATED:
             ctx.setActiveChatId(frame.content);
             ctx.router.replace(`/chat/${frame.content}`);
-            appendChatList({
-                id: frame.content,
-                title: null,
-            });
+            ctx.queryClient.setQueryData<Chat[]>(chatsQueryKey, (chats = []) => [
+                { id: frame.content, title: null },
+                ...chats,
+            ]);
             break;
 
         case STREAM_MESSAGE.CHAT_MESSAGE:
@@ -123,7 +160,11 @@ function handleFrame(
         case STREAM_MESSAGE.CHAT_TITLE:
             const chatId = useChatStore.getState().activeChatId;
             if (!chatId) break;
-            updateChatTitle(chatId, frame.content);
+            ctx.queryClient.setQueryData<Chat[]>(chatsQueryKey, (chats = []) =>
+                chats.map((chat) =>
+                    chat.id === chatId ? { ...chat, title: frame.content } : chat,
+                ),
+            );
             break;
 
         case STREAM_MESSAGE.COMPLETED:

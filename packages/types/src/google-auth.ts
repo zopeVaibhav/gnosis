@@ -1,6 +1,9 @@
 const BASE = "openid email profile";
 const GOOGLEAPIS = "https://www.googleapis.com/auth";
-const COMMON = { prompt: "consent", access_type: "offline" } as const;
+const COMMON = {
+    prompt: "consent",
+    access_type: "offline",
+} as const;
 
 export const GoogleAuth = {
     gmail: { ...COMMON, scope: `${BASE} ${GOOGLEAPIS}/gmail.readonly` },

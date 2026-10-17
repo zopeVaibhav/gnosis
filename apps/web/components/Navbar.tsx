@@ -4,13 +4,14 @@ import SignInModal from "./SignInModal";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { Session } from "next-auth";
+import { useSession } from "next-auth/react";
 import Button from "./shared/Button";
 import AppLogo from "./AppLogo";
 
 const tabs = ["Home", "Features", "Docs", "Pricing"];
 
-export default function Navbar({ session }: { session: Session | null }) {
+export default function Navbar() {
+    const { data: session, status } = useSession();
     const [isAuthModalOpen, setAuthModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState("Home");
     const [hovered, setHovered] = useState<string | null>(null);
@@ -71,11 +72,13 @@ export default function Navbar({ session }: { session: Session | null }) {
                         </button>
                     ))}
                 </nav>
-                {session?.user ? (
+                {status === "loading" ? (
+                    <div className="h-8 w-24 rounded-full bg-surface-raised animate-pulse" />
+                ) : session?.user ? (
                     <div className="flex gap-2">
                         <Link
                             href="/chat"
-                            className="px-4 py-1.5 rounded-full text-sm font-medium bg-primary cursor-pointer hover:bg-primary-hover transition-colors"
+                            className="px-4 py-1.5 rounded-full text-sm font-medium bg-primary text-primary-foreground cursor-pointer hover:bg-primary-hover transition-colors"
                         >
                             Deep Dive
                         </Link>

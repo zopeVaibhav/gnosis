@@ -1,12 +1,9 @@
 import Navbar from "@/components/Navbar";
-import { getServerSession } from "next-auth";
-import { authOptions } from "./api/auth/[...nextauth]/options";
 
-export default async function Page() {
-    const session = await getServerSession(authOptions);
+export default function Page() {
     return (
         <div className="flex flex-col h-screen">
-            <Navbar session={session} />
+            <Navbar />
         </div>
     );
 }

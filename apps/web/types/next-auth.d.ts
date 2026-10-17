@@ -1,13 +1,20 @@
-import { AppUser } from "@/app/api/auth/[...nextauth]/options";
+import type { SessionUser } from "@/store/user/useUserSessionStore";
 
 declare module "next-auth" {
     interface Session {
-        user: AppUser;
+        user?: SessionUser;
+        accessToken?: string;
+        error?: string;
     }
 }
 
 declare module "next-auth/jwt" {
     interface JWT {
-        user: AppUser;
+        user?: SessionUser;
+        accessToken?: string;
+        refreshToken?: string;
+        expiresAt?: number;
+        refreshExpiresAt?: number;
+        error?: string;
     }
 }

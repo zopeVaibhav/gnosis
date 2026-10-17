@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
 import z from "zod";
 import { prisma } from "@gnosis/database";
+import { env } from "../../configs/env";
+import JwtService from "../../services/service.jwt";
 import ResponseWriter from "../../services/service.response";
+import { merge_scopes } from "../../services/service.scopes";
 
 export default class LinkAccountController {
     static body_schema = z.object({
@@ -40,10 +43,7 @@ export default class LinkAccountController {
                 select: { scope: true },
             });
 
-            const mergedScope = LinkAccountController.merge_scopes(
-                existingAccount?.scope,
-                data.scope,
-            );
+            const mergedScope = merge_scopes(existingAccount?.scope, data.scope);
 
             await prisma.account.upsert({
                 where: {
@@ -69,20 +69,31 @@ export default class LinkAccountController {
                 },
             });
 
-            return ResponseWriter.success(res, null, "Linked");
+            // linking re-runs the NextAuth sign-in, which replaces the session JWT,
+            // so issue a fresh app token here too or the client loses its session
+            const accessToken = JwtService.sign_access_token(user.id);
+            const refreshToken = JwtService.sign_refresh_token(user.id);
+            const refreshExpiresAt = JwtService.refresh_expiry_date();
+
+            return ResponseWriter.success(
+                res,
+                {
+                    user: {
+                        id: user.id,
+                        email: user.email,
+                        name: user.name,
+                        image: user.image,
+                    },
+                    accessToken,
+                    refreshToken,
+                    accessTokenExpiresInSec: env.ACCESS_TOKEN_TTL_SEC,
+                    refreshTokenExpiresAt: refreshExpiresAt.toISOString(),
+                },
+                "Linked",
+            );
         } catch (err) {
             console.error("LinkAccountController error: ", err);
             return ResponseWriter.system_error(res);
         }
-    }
-
-    private static merge_scopes(
-        existing: string | null | undefined,
-        incoming: string | null | undefined,
-    ): string | null {
-        const merged = new Set(
-            [...(existing ?? "").split(" "), ...(incoming ?? "").split(" ")].filter(Boolean),
-        );
-        return merged.size > 0 ? [...merged].join(" ") : null;
     }
 }

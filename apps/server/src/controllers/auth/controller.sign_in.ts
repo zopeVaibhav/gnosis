@@ -4,6 +4,7 @@ import { prisma } from "@gnosis/database";
 import { env } from "../../configs/env";
 import JwtService from "../../services/service.jwt";
 import ResponseWriter from "../../services/service.response";
+import { merge_scopes } from "../../services/service.scopes";
 
 export default class SignInController {
     static body_schema = z.object({
@@ -38,6 +39,19 @@ export default class SignInController {
                 },
             });
 
+            const existingAccount = await prisma.account.findUnique({
+                where: {
+                    provider_providerAccountId: {
+                        provider: data.provider,
+                        providerAccountId: data.providerAccountId,
+                    },
+                },
+                select: { scope: true },
+            });
+
+            // a plain sign-in only asks for base scopes, so keep any service scopes granted earlier
+            const mergedScope = merge_scopes(existingAccount?.scope, data.scope);
+
             await prisma.account.upsert({
                 where: {
                     provider_providerAccountId: {
@@ -52,13 +66,13 @@ export default class SignInController {
                     accessToken: data.accessToken ?? null,
                     refreshToken: data.refreshToken ?? null,
                     expiresAt: data.expiresAt ?? null,
-                    scope: data.scope ?? null,
+                    scope: mergedScope,
                 },
                 update: {
                     accessToken: data.accessToken ?? null,
                     refreshToken: data.refreshToken ?? undefined,
                     expiresAt: data.expiresAt ?? undefined,
-                    scope: data.scope ?? null,
+                    scope: mergedScope,
                 },
             });
 

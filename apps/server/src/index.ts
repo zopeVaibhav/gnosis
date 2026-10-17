@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import cookieParser from "cookie-parser";
 import { env } from "./configs/env";
 import v1_router from "./routers/v1/router.v1";
 import { not_found_handler } from "./middlewares/middleware.error";
@@ -10,11 +9,9 @@ const app = express();
 app.use(
     cors({
         origin: [env.WEB_ORIGIN],
-        credentials: true,
     }),
 );
 app.use(express.json());
-app.use(cookieParser());
 
 app.use("/api/v1", v1_router);
 
